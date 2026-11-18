@@ -29,6 +29,14 @@ export interface AIModelOption {
   supportsVision?: boolean;
 }
 
+export interface TranscriptionProfile {
+  id: string;
+  name: string;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+}
+
 export interface TranscriptSegment {
   id: string;
   speaker: 'interviewer' | 'candidate' | 'system';
@@ -102,6 +110,8 @@ export interface Settings {
   transcriptionApiBaseUrl: string;
   transcriptionApiKey: string;
   transcriptionApiModel: string;
+  transcriptionProfiles: TranscriptionProfile[];
+  selectedTranscriptionProfile: string;
 
   // Ultra Mode / Stealth
   ultraModeEnabled: boolean;

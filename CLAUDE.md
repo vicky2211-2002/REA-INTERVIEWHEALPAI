@@ -6,12 +6,17 @@ Short, accurate context for this repository. For depth, read
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.1.1 — transcription supports a selectable **Local
+hide/restore). Version 1.2.0 — transcription supports a selectable **Local
 (offline whisper.cpp)** or **API (OpenAI-compatible `/audio/transcriptions`)**
-provider. Verified end-to-end with Groq's free `whisper-large-v3`: real-speech
-sentence transcribed exactly (HTTP 200), both NVIDIA custom chat models
-`OK` via in-app Test, `test-transcription` IPC OK, API path drops phantom
-fillers on near-silent clips.
+provider. The API mode manages **multiple saved endpoints** (Settings → API →
+Transcription → Add / Edit / Use / Delete; persisted as `transcriptionProfiles`
+with `selectedTranscriptionProfile`; legacy flat fields are migrated once into a
+named profile on first launch of v1.2.0). Verified end-to-end with Groq's free
+`whisper-large-v3`: real-speech sentence transcribed exactly (HTTP 200), both
+NVIDIA custom chat models `OK` via in-app Test, `test-transcription` IPC OK
+(success on Groq key, clean HTTP 401 on a bad key), profile add / switch /
+delete selection logic exercised via IPC, API path drops phantom fillers on
+near-silent clips.
 
 ---
 
@@ -24,7 +29,10 @@ A Windows desktop interview assistant (Electron overlay):
    (`whisper-cli.exe`, bundled Base model) or an OpenAI-compatible
    speech-to-text API (OpenAI `whisper-1`, Groq `whisper-large-v3`,
    self-hosted faster-whisper). Default is Local; switch in
-   Settings → API → Transcription (takes effect on the next audio chunk, no restart).
+   Settings → API → Transcription (takes effect on the next audio chunk, no
+   restart). The API mode supports **multiple saved endpoints** (Add / Edit /
+   Use / Delete; `transcriptionProfiles` + `selectedTranscriptionProfile` in
+   settings; flat legacy fields auto-migrate once into a named profile).
 3. Answers with a **user-supplied** AI endpoint (OpenAI-compatible custom API, or
    OpenAI/Anthropic/Google/NVIDIA keys). No bundled subscription, no login.
 4. Can answer from a screenshot for vision models ("Analyse Screen").
@@ -55,6 +63,8 @@ node tools/mock_provider.cjs                  # fake OpenAI endpoint on :8787
 powershell -File tools/make_speech.ps1        # real 16 kHz speech WAV for testing
 node tools/cdp_audio_e2e.cjs 9223 20000       # audio -> transcript assertions
 powershell -File tools/win_visible.ps1 -ProcessName InterviewCopilot   # hidden?
+node tools/cdp_test_apis.cjs 9224             # flip provider, test-transcription + test-model
+node tools/cdp_test_profiles.cjs 9224         # saved transcription profile add/switch/delete flows
 ```
 
 ---

@@ -41,6 +41,8 @@ const DEFAULT_SETTINGS: Settings = {
   transcriptionApiBaseUrl: '',
   transcriptionApiKey: '',
   transcriptionApiModel: 'whisper-1',
+  transcriptionProfiles: [],
+  selectedTranscriptionProfile: '',
 
   // Ultra Mode / Stealth — defaults match reference app (invisible on screen share)
   ultraModeEnabled: true,
@@ -92,12 +94,33 @@ export class SettingsManager {
     // One-time migration: `large-v3` (3 GB) used to be the default. Move it to
     // the bundled `base` model once, so a deliberate choice afterwards sticks.
     const storeAny = this.store as any;
-    if (storeAny.get('settingsVersion') !== 2) {
+    const settingsVersion = storeAny.get('settingsVersion');
+    if (settingsVersion !== 2 && settingsVersion !== 3) {
       if (this.settings.whisperModel === 'large-v3') {
         this.updateSettings({ whisperModel: 'base' });
         console.log('[Settings] migrated whisperModel large-v3 -> base');
       }
       storeAny.set('settingsVersion', 2);
+      this.settings = this.store.store;
+    }
+
+    // One-time migration (v3): users who configured the transcription API via
+    // the flat fields get a named saved profile, so multiple endpoints can be
+    // managed (and switched) from the UI.
+    if (storeAny.get('settingsVersion') !== 3) {
+      const profiles = this.settings.transcriptionProfiles ?? [];
+      if (profiles.length === 0 && this.settings.transcriptionApiBaseUrl && this.settings.transcriptionApiKey) {
+        const model = this.settings.transcriptionApiModel || 'whisper-1';
+        const id = `profile-${Date.now()}`;
+        this.updateSettings({
+          transcriptionProfiles: [
+            { id, name: model, baseUrl: this.settings.transcriptionApiBaseUrl, apiKey: this.settings.transcriptionApiKey, model },
+          ],
+          selectedTranscriptionProfile: id,
+        });
+        console.log('[Settings] seeded saved transcription profile from flat API fields:', model);
+      }
+      storeAny.set('settingsVersion', 3);
       this.settings = this.store.store;
     }
   }
@@ -270,6 +293,8 @@ export class SettingsManager {
       transcriptionProvider: this.settings.transcriptionProvider,
       transcriptionApiBaseUrl: this.settings.transcriptionApiBaseUrl,
       transcriptionApiModel: this.settings.transcriptionApiModel,
+      transcriptionProfiles: this.settings.transcriptionProfiles,
+      selectedTranscriptionProfile: this.settings.selectedTranscriptionProfile,
     };
   }
 

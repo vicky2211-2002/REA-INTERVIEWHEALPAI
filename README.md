@@ -53,9 +53,13 @@ You choose how speech becomes text in **Settings → API → Transcription**:
   `…/audio/transcriptions` endpoint (multipart WAV). Works with OpenAI `whisper-1`,
   **Groq `whisper-large-v3`** (recommended; free tier at console.groq.com), or any
   self‑hosted faster‑whisper server. The Groq setup is verified end‑to‑end — Base
-  URL `https://api.groq.com/openai/v1`, Model `whisper-large-v3`. Fill in
-  **Base URL**, **API Key**, and **Model**, then click **Test connection**.
-  Use this when the local models mis-hear technical vocabulary/accents.
+  URL `https://api.groq.com/openai/v1`, Model `whisper-large-v3`.
+  **Multiple saved endpoints** are supported: **Add** a named API (name,
+  Base URL, key, model), **Use** to switch the active one, **Edit** / **Delete**
+  as needed. **Test connection** checks the active saved API. Your flat Base
+  URL / key / model from earlier versions is migrated into a saved profile on
+  first launch — nothing is lost. Use this when the local models mis-hear
+  technical vocabulary/accents.
   Note: NVIDIA NIM has **no** transcription endpoint (verified — HTTP 404), so
   NVIDIA keys work for answers only, not for speech.
 

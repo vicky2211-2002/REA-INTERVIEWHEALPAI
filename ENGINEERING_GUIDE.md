@@ -252,6 +252,20 @@ AudioContext(16000)  ──PCM s16──▶  'audio-chunk'  ──────�
   fillers from near-silent audio). **Verified Nov 2026** with Groq free tier
   (`whisper-large-v3`, exact transcription of a synthesized SAPI sentence);
   NVIDIA NIM has no STT endpoint (HTTP 404) — NVIDIA keys work for answers only.
+- **Saved transcription endpoints (v1.2.0)**: the API mode manages a list of
+  `transcriptionProfiles: TranscriptionProfile[]` (`id, name, baseUrl, apiKey,
+  model`) plus `selectedTranscriptionProfile` (id of the active profile). The
+  effective config is resolved lazily at chunk time (`activeApiProfile()` in
+  `WhisperTranscriber`): selected profile → first saved profile → legacy flat
+  `transcriptionApi*` fields. A one-time v3 `settingsVersion` migration seeds a
+  named profile from non-empty legacy flat fields, so existing users keep their
+  working Groq configuration and can add more endpoints. The renderer manages
+  profiles with the same Add / Edit / Use / Delete UX as custom chat models
+  (Settings → API → Transcription); arrays replace wholesale through
+  `update-settings` IPC (no dedicated add/remove IPC needed), and the transcriber
+  re-reads fresh settings on every chunk, so edits and switches take effect
+  immediately. Legacy flat fields remain as a last-resort fallback if every saved
+  profile is deleted.
 
 ### 5.3 Model resolution (AI)
 
@@ -294,10 +308,12 @@ main handleAsk()
 `electron-store` file: `%APPDATA%\interview-copilot\interview-copilot-settings.json`.
 
 Defaults live in `SettingsManager.DEFAULT_SETTINGS`. Migrations use
-`settingsVersion` (currently `2`, which moved `whisperModel` from
-`large-v3` → `base` so first launch does not try to download 3 GB).
-The `transcriptionProvider` block (`transcriptionApiBaseUrl/Key/Model`) added in
-v1.1.0 has no migration — absent keys fall back to the defaults via electron-store
+`settingsVersion` (currently `3`: `2` moved `whisperModel` from `large-v3` →
+`base`; `3` seeds a saved transcription profile from the legacy flat
+`transcriptionApi*` fields when the user had configured the API, keeping the
+profile list the single source of truth in the UI while the flat fields remain
+a fallback). The `transcriptionProvider` block (`transcriptionApiBaseUrl/Key/Model`) added in
+v1.1.0 has no migration of its own — absent keys fall back to the defaults via electron-store
 (`'local'`, `whisper-1`), so existing installs keep local offline transcription.
 
 ### 5.6 Shortcuts (registered in main, dispatched as `ui-command`)
@@ -451,13 +467,25 @@ powershell -ExecutionPolicy Bypass -File tools/win_visible.ps1 -ProcessName Inte
 `NO VISIBLE WINDOWS` after clicking **Show/Hide** (or `Ctrl+\`), a window handle
 after pressing `Ctrl+\` again.
 
-### 7.6 Regression checklist
+### 7.6 Saved transcription profiles end-to-end (v1.2.0)
+
+```powershell
+node tools/cdp_test_apis.cjs 9224       # flips provider, runs test-transcription + test-model ×2
+node tools/cdp_test_profiles.cjs 9224   # add dummy profile (bad key) → select → expect HTTP 401 →
+                                        # switch back → test OK → delete dummy → state clean
+```
+
+`cdp_test_profiles.cjs` starts from the real settings, so it proves the whole
+selection path without touching the user's Groq configuration.
+
+### 7.7 Regression checklist
 
 | Area touched | Must re-run |
 | --- | --- |
 | renderer/components | §7.2, click-through on a transparent area, each tab |
 | audio/hook | §7.3 (real speech, silence, mic on) |
 | AI/providers | §7.4 (answer + screen + chat) |
+| transcription API / profiles | §7.6 (both providers) |
 | settings | fresh run with deleted `%APPDATA%\interview-copilot` |
 | packaging config | §9 plus packaged smoke test (Whisper ready) |
 | shortcuts/tray | each accelerator in §5.6, tray menu items |

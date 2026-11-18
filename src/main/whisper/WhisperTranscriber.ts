@@ -43,11 +43,15 @@ export class WhisperTranscriber extends EventEmitter {
   }
 
   updateSettings(settings: Settings) {
+    const providerChanged = settings.transcriptionProvider !== this.settings.transcriptionProvider;
     this.settings = settings;
     this.languageCode = this.mapLanguage(settings.whisperLanguage || 'en');
-    if (this.isInitialized) {
+    if (providerChanged && this.isInitialized) {
+      // Reset so the next initialize() emits a fresh status for the new provider.
+      this.isInitialized = false;
       void this.initialize();
     }
+    // Whisper model/language/profile changes apply on the next chunk — no re-init needed.
   }
 
   private mapLanguage(lang: string): string {
@@ -61,6 +65,29 @@ export class WhisperTranscriber extends EventEmitter {
   }
 
   /**
+   * Resolve the effective API configuration: the selected saved profile if
+   * any, else the legacy flat fields. Never holds plaintext beyond this call.
+   */
+  private activeApiProfile(): { baseUrl: string; apiKey: string; model: string; name: string } {
+    const profiles = this.settings.transcriptionProfiles ?? [];
+    const selected = profiles.find((p) => p.id === this.settings.selectedTranscriptionProfile) ?? profiles[0];
+    if (selected) {
+      return {
+        baseUrl: (selected.baseUrl || '').trim().replace(/\/+$/, ''),
+        apiKey: (selected.apiKey || '').trim(),
+        model: (selected.model || 'whisper-1').trim(),
+        name: selected.name || selected.model,
+      };
+    }
+    return {
+      baseUrl: (this.settings.transcriptionApiBaseUrl || '').trim().replace(/\/+$/, ''),
+      apiKey: (this.settings.transcriptionApiKey || '').trim(),
+      model: (this.settings.transcriptionApiModel || 'whisper-1').trim(),
+      name: this.settings.transcriptionApiModel || 'whisper-1',
+    };
+  }
+
+  /**
    * Resolve the binary + an already-present model file. Never downloads here:
    * a multi-GB download at startup would block the whole app window.
    * Missing models are fetched lazily on first transcription (see getModelPath).
@@ -69,11 +96,12 @@ export class WhisperTranscriber extends EventEmitter {
     if (this.isInitialized) return;
     this.emitStatus({ status: 'loading', progress: 0 });
 
-    // API provider â€” no whisper binary/model needed; audio is POSTed per chunk.
+    // API provider — no whisper binary/model needed; audio is POSTed per chunk.
     if (this.settings.transcriptionProvider === 'api') {
       this.isInitialized = true;
-      this.emitStatus({ status: 'ready', progress: 100, model: `api:${this.settings.transcriptionApiModel || 'whisper-1'}` });
-      console.log('[Whisper] transcription provider: API â†’', this.settings.transcriptionApiBaseUrl || '(not configured)');
+      const profile = this.activeApiProfile();
+      this.emitStatus({ status: 'ready', progress: 100, model: `api:${profile.model}` });
+      console.log('[Whisper] transcription provider: API →', profile.name, '|', profile.baseUrl || '(not configured)');
       return;
     }
 
@@ -90,7 +118,7 @@ export class WhisperTranscriber extends EventEmitter {
         this.emitStatus({ status: 'ready', progress: 100 });
         console.log('[Whisper] ready:', path.basename(existing));
       } else {
-        // Loaded but model not on disk yet â€” downloaded on first use.
+        // Loaded but model not on disk yet — downloaded on first use.
         this.emitStatus({ status: 'loading', progress: 0 });
         console.log('[Whisper] binary ready, model', this.modelFilename(), 'will download on first use');
       }
@@ -145,12 +173,9 @@ export class WhisperTranscriber extends EventEmitter {
 
   /** POST a WAV buffer to an OpenAI-compatible /audio/transcriptions endpoint. */
   private async transcribeWithApi(wavFile: string): Promise<string> {
-    const s = this.settings;
-    const base = (s.transcriptionApiBaseUrl || '').trim().replace(/\/+$/, '');
-    const key = (s.transcriptionApiKey || '').trim();
-    const model = (s.transcriptionApiModel || 'whisper-1').trim();
-    if (!base) throw new Error('Transcription API Base URL not set â€” configure it in Settings â†’ API â†’ Transcription.');
-    if (!key) throw new Error('Transcription API key not set â€” add it in Settings â†’ API â†’ Transcription.');
+    const { baseUrl: base, apiKey: key, model } = this.activeApiProfile();
+    if (!base) throw new Error('Transcription API not configured — add a saved endpoint in Settings → API → Transcription.');
+    if (!key) throw new Error('Transcription API key missing — add it in Settings → API → Transcription.');
 
     const wav = fs.readFileSync(wavFile);
     const form = new FormData();
@@ -179,12 +204,9 @@ export class WhisperTranscriber extends EventEmitter {
   /** Verify the configured transcription API with a 1-second silent clip. */
   async testApiConnection(): Promise<{ success: boolean; response?: string; error?: string }> {
     try {
-      const s = this.settings;
-      const base = (s.transcriptionApiBaseUrl || '').trim().replace(/\/+$/, '');
-      const key = (s.transcriptionApiKey || '').trim();
-      const model = (s.transcriptionApiModel || 'whisper-1').trim();
-      if (!base) return { success: false, error: 'Base URL is required (e.g. https://api.openai.com/v1).' };
-      if (!key) return { success: false, error: 'API key is required.' };
+      const { baseUrl: base, apiKey: key, model, name } = this.activeApiProfile();
+      if (!base) return { success: false, error: 'Add a transcription API first (Settings → API → Transcription), then test.' };
+      if (!key) return { success: false, error: `API key missing for “${name}”.` };
 
       const pcm = Buffer.alloc(this.SAMPLE_RATE * this.BYTES_PER_SAMPLE); // 1s s16le silence
       const wav = this.makeWav(pcm);
@@ -204,7 +226,7 @@ export class WhisperTranscriber extends EventEmitter {
       }
       try {
         const parsed = JSON.parse(raw) as { text?: string };
-        return { success: true, response: parsed.text?.trim() ? parsed.text.trim() : '(API reachable â€” empty transcription of silence, as expected)' };
+        return { success: true, response: parsed.text?.trim() ? parsed.text.trim() : '(API reachable — empty transcription of silence, as expected)' };
       } catch {
         return { success: true, response: raw.slice(0, 300) || '(API reachable)' };
       }
@@ -367,7 +389,7 @@ export class WhisperTranscriber extends EventEmitter {
 
   private runWhisper(binary: string, modelPath: string, wavFile: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      // Note: -pp/--print-progress is a boolean flag in whisper.cpp â€” never pass
+      // Note: -pp/--print-progress is a boolean flag in whisper.cpp — never pass
       // a value, otherwise it is parsed as an extra input file.
       const args = [
         '-m', modelPath,

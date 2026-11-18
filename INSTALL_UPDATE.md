@@ -6,7 +6,7 @@ update an existing install without breaking anything.
 | Item | Value |
 |------|-------|
 | Installer you build | `release/InterviewCopilot Setup <version>.exe` |
-| Latest installer in this repo | `C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.1.1.exe` |
+| Latest installer in this repo | `C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.0.exe` |
 | GitHub repo | https://github.com/vicky2211-2002/REA-INTERVIEWHEALPAI.git |
 | Default install folder | `C:\Users\<YourName>\AppData\Local\Programs\InterviewCopilot\InterviewCopilot.exe` |
 | Settings file (user data) | `%APPDATA%\interview-copilot\interview-copilot-settings.json` |
@@ -36,13 +36,13 @@ Before you install or update:
 
 ### Option A — Run the installer with UI (recommended for most users)
 ```powershell
-Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.1.1.exe"
+Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.0.exe"
 ```
 Follow the wizard; accept the default install folder.
 
 ### Option B — Silent install (for automated/scripted setups)
 ```powershell
-Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.1.1.exe" -ArgumentList '/S' -Wait
+Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.0.exe" -ArgumentList '/S' -Wait
 ```
 The `/S` flag runs the NSIS installer silently. The app installs to
 `%LOCALAPPDATA%\Programs\InterviewCopilot`.
@@ -61,19 +61,19 @@ The `/S` flag runs the NSIS installer silently. The app installs to
 
 ---
 
-## 3. Update an existing install (e.g., v1.0.0 → v1.1.1)
+## 3. Update an existing install (e.g., v1.0.0 → v1.2.0)
 
 1. **Close the running app** (same command as section 1).
 2. Run the new installer (either with UI or silently):
    ```powershell
-   Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.1.1.exe"
+   Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.0.exe"
    # or silently:
-   # Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.1.1.exe" -ArgumentList '/S' -Wait
+   # Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.0.exe" -ArgumentList '/S' -Wait
    ```
 3. Your settings and models are preserved — the installer only overwrites program files.
-4. Launch the app and confirm **footer/version** shows the new version (1.1.1) and that your saved custom models are still present in **Settings → API**.
+4. Launch the app and confirm **footer/version** shows the new version (1.2.0) and that your saved custom models are still present in **Settings → API**.
 
-> **Note:** v1.1.0 added the transcription provider switch (Local/API) and v1.1.1 verified both providers end‑to‑end (Groq whisper‑large‑v3; NVIDIA models via in‑app Test). The installer picks up the updated renderer automatically.
+> **Note:** v1.1.0 added the transcription provider switch (Local/API), v1.1.1 verified both providers end‑to‑end, and v1.2.0 adds **saved transcription endpoints** (add / edit / use / delete multiple STT APIs in Settings → API → Transcription). The installer picks up the updated renderer automatically. Upgrading from ≤ v1.1.x seeds your existing flat API configuration (e.g. the Groq `whisper-large-v3` setup) into a saved profile named `whisper-large-v3` on first launch — nothing is lost.
 
 ---
 
@@ -129,7 +129,7 @@ npx electron-builder --win nsis
 # Output: release\InterviewCopilot Setup <version>.exe
 ```
 
-Version is controlled by `package.json` → `"version": "1.1.1"` (bump as needed).
+Version is controlled by `package.json` → `"version": "1.2.0"` (bump as needed).
 
 ---
 
@@ -138,7 +138,7 @@ Version is controlled by `package.json` → `"version": "1.1.1"` (bump as needed
 | What | Path |
 |------|------|
 | Source | `C:\Users\Shivani Babar\InterviewCopilot\` |
-| Installer | `release\InterviewCopilot Setup 1.1.1.exe` |
+| Installer | `release\InterviewCopilot Setup 1.2.0.exe` |
 | Installed app | `C:\Users\Shivani Babar\AppData\Local\Programs\InterviewCopilot\InterviewCopilot.exe` |
 | User settings | `%APPDATA%\interview-copilot\interview-copilot-settings.json` |
 | Whisper models | `%APPDATA%\interview-copilot\whisper-models\` (downloaded on demand) |
@@ -155,7 +155,7 @@ Version is controlled by `package.json` → `"version": "1.1.1"` (bump as needed
 Get-Process -Name InterviewCopilot -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # Install silently
-Start-Process "C:\path\to\InterviewCopilot Setup 1.1.1.exe" -ArgumentList '/S' -Wait
+Start-Process "C:\path\to\InterviewCopilot Setup 1.2.0.exe" -ArgumentList '/S' -Wait
 
 # Launch with debug port for smoke test
 Start-Process "$env:LOCALAPPDATA\Programs\InterviewCopilot\InterviewCopilot.exe" -ArgumentList "--remote-debugging-port=9228"
@@ -177,30 +177,57 @@ Copy-Item "$env:TEMP\ic-backup.json" "$env:APPDATA\interview-copilot\interview-c
 1. Open **Settings → API**.
 2. Check **Base URL** for your custom provider (e.g., NVIDIA NIM: `https://integrate.api.nvidia.com/v1`).
 3. Click **Test** next to the model name — you should see a short response.
-4. Under **Transcription**, confirm the provider is **Local (offline)** (default). If the local model mis-hears questions, switch to **API (cloud)**: set your Base URL / key / model (e.g. OpenAI `whisper-1` or Groq `whisper-large-v3`), then click **Test connection**.
+4. Under **Transcription**, confirm the provider is **Local (offline)** (default). If the local model mis-hears questions, switch to **API (cloud)**: add a saved API (name, Base URL, key, model — e.g. Groq `whisper-large-v3`), make sure it shows **Active**, then click **Test connection** (see section 9.1).
 5. Start listening with `Ctrl+Shift+L` and say anything — the transcript appears under the command bar.
 
-## 9.1 Transcription providers (v1.1.1+)
+## 9.1 Transcription providers (v1.2.0+)
 
 | Provider | Where it runs | Setup |
 |----------|---------------|-------|
 | **Local (offline)** — default | Your PC, via whisper.cpp | Settings → API → Transcription → Local; pick a model (`base` bundled; `small`/`medium`/`large-v3` download once) |
-| **API (cloud)** — Groq recommended | Remote, via any OpenAI‑compatible `POST {base}/audio/transcriptions` | Settings → API → Transcription → API; set Base URL, API key, model; click **Test connection** |
+| **API (cloud)** — Groq recommended | Remote, via any OpenAI‑compatible `POST {base}/audio/transcriptions` | Settings → API → Transcription → API; add a saved API (name, Base URL, key, model); click **Test connection** |
+
+### Saved transcription APIs (v1.2.0+)
+
+The **API (cloud)** provider manages **multiple saved endpoints** — same UX as
+saved custom chat models. In **Settings → API → Transcription → API** you can:
+
+* **Add** — fill in Name, Base URL, API Key, Model and click **Add**. The new
+  endpoint becomes the active one immediately.
+* **Use** — click **Use** on any saved entry to make it active (a green
+  **Active** badge marks the current one).
+* **Edit** — click **Edit**, change any field, then **Save** (or **Cancel** to discard).
+* **Delete** — click **Delete** to remove a saved endpoint. If you delete the
+  active one, the first remaining saved endpoint becomes active. If you delete
+  all of them, the app falls back to the legacy flat fields (if any).
+
+Keys are stored only in the local settings file
+(`%APPDATA%\interview-copilot\interview-copilot-settings.json`) — never in the
+repo, never sent anywhere else. Changes take effect on the next ~3 s audio
+chunk — no restart needed. **Test connection** always checks the **active**
+saved API.
+
+Upgrading from v1.0.x/v1.1.x: your existing flat Base URL / key / model are
+automatically seeded into a saved profile named after your model
+(e.g. `whisper-large-v3`) on first launch of v1.2.0. Nothing is lost; the flat
+fields remain as a fallback if every saved profile is deleted.
 
 ### Recommended: Groq free tier (verified)
 
 The app was verified end‑to‑end with **Groq's free `whisper‑large‑v3`** (Nov 2026):
 
 1. Sign up free at **https://console.groq.com** → **API Keys** → **Create API Key** (`gsk_…`).
-2. In **Settings → API → Transcription**, select **API (cloud)** and enter:
+2. In **Settings → API → Transcription**, select **API (cloud)** and **Add** a saved API with:
+   * Name: e.g. `Groq whisper-large-v3`
    * Base URL: `https://api.groq.com/openai/v1`
    * Model: `whisper-large-v3` (or `whisper-large-v3-turbo` for lower latency)
    * API Key: your `gsk_…` key
-3. Click **Test connection** → expect `API reachable`.
+3. Click **Test connection** → expect `API reachable` (a bad key fails cleanly with the provider's HTTP 401).
 4. Real-speech check: a spoken test sentence (“What is your experience with Git …”)
    returned an exact transcription (HTTP 200). Both NVIDIA chat models
    (`mistral-large-4-1t-a52b`, `nvidia/nemotron-3-ultra-550b-a55b`) were also
-   verified with the in-app **Test** button.
+   verified with the in-app **Test** button, and the saved-profile flows
+   (add → select → test → switch → delete) were exercised end-to-end via IPC.
 
 Notes:
 * Groq free tier is generous for interview prep; keys never leave the local settings file.

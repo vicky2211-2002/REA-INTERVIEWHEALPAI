@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AIModel, AIModelOption, AudioDevice, Settings } from '@shared/types';
+import { AIModel, AIModelOption, AudioDevice, Settings, TranscriptionProfile } from '@shared/types';
 
 interface ApiTabProps {
   settings: Settings;
@@ -41,6 +41,11 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [testingTranscription, setTestingTranscription] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState('');
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState('');
+  const [profileBaseUrl, setProfileBaseUrl] = useState('');
+  const [profileKey, setProfileKey] = useState('');
+  const [profileModel, setProfileModel] = useState('');
 
   const refreshModels = () => {
     window.electronAPI
@@ -144,6 +149,76 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
     setCustomKey('');
     setCustomModel('');
     setStatus('');
+  };
+
+  // ---------------------------------------------------------------- transcription profiles
+  const transcriptionProfiles = settings.transcriptionProfiles ?? [];
+  const activeProfile =
+    transcriptionProfiles.find((p) => p.id === settings.selectedTranscriptionProfile) ?? transcriptionProfiles[0] ?? null;
+
+  const saveProfile = () => {
+    const name = profileName.trim();
+    const baseUrl = profileBaseUrl.trim().replace(/\/+$/, '');
+    const apiKey = profileKey.trim();
+    const model = profileModel.trim();
+    if (!name || !baseUrl || !model) {
+      setTranscriptionStatus('Name, Base URL and Model are required.');
+      return;
+    }
+    if (editingProfileId) {
+      onUpdate({
+        transcriptionProfiles: transcriptionProfiles.map((p) =>
+          p.id === editingProfileId ? { ...p, name, baseUrl, apiKey, model } : p,
+        ),
+      });
+      setTranscriptionStatus(`Saved ${name}`);
+    } else {
+      const id = `profile-${Date.now()}`;
+      onUpdate({
+        transcriptionProfiles: [...transcriptionProfiles, { id, name, baseUrl, apiKey, model }],
+        selectedTranscriptionProfile: id,
+      });
+      setTranscriptionStatus(`Added and selected ${name}`);
+    }
+    setEditingProfileId(null);
+    setProfileName('');
+    setProfileBaseUrl('');
+    setProfileKey('');
+    setProfileModel('');
+  };
+
+  const startEditProfile = (profile: TranscriptionProfile) => {
+    setEditingProfileId(profile.id);
+    setProfileName(profile.name);
+    setProfileBaseUrl(profile.baseUrl);
+    setProfileKey(profile.apiKey);
+    setProfileModel(profile.model);
+    setTranscriptionStatus(`Editing ${profile.name}`);
+  };
+
+  const cancelProfileEdit = () => {
+    setEditingProfileId(null);
+    setProfileName('');
+    setProfileBaseUrl('');
+    setProfileKey('');
+    setProfileModel('');
+    setTranscriptionStatus('');
+  };
+
+  const deleteProfile = (id: string) => {
+    const remaining = transcriptionProfiles.filter((p) => p.id !== id);
+    const patch: Partial<Settings> = { transcriptionProfiles: remaining };
+    if (settings.selectedTranscriptionProfile === id) {
+      patch.selectedTranscriptionProfile = remaining[0]?.id ?? '';
+    }
+    if (editingProfileId === id) cancelProfileEdit();
+    onUpdate(patch);
+    setTranscriptionStatus('Deleted.');
+  };
+
+  const useProfile = (id: string) => {
+    onUpdate({ selectedTranscriptionProfile: id });
+    setTranscriptionStatus('');
   };
 
   const testModel = async () => {
@@ -355,14 +430,30 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
           </div>
         ) : (
           <div className="mt-4 space-y-3">
+            {activeProfile && !editingProfileId && (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12.5px] text-emerald-800">
+                Active: <span className="font-medium">{activeProfile.name}</span> · {activeProfile.model} · {activeProfile.baseUrl}
+              </div>
+            )}
+
+            {/* Add / edit form */}
             <div className="grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Transcription API Base URL</label>
+                <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Name</label>
                 <input
                   className="field"
-                  placeholder="https://api.openai.com/v1"
-                  value={settings.transcriptionApiBaseUrl}
-                  onChange={(event) => onUpdate({ transcriptionApiBaseUrl: event.target.value })}
+                  placeholder="e.g. Groq Whisper (free)"
+                  value={profileName}
+                  onChange={(event) => setProfileName(event.target.value)}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Base URL</label>
+                <input
+                  className="field"
+                  placeholder="https://api.groq.com/openai/v1"
+                  value={profileBaseUrl}
+                  onChange={(event) => setProfileBaseUrl(event.target.value)}
                 />
               </div>
               <div>
@@ -370,26 +461,100 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
                 <input
                   className="field"
                   type="password"
-                  placeholder="sk-…"
-                  value={settings.transcriptionApiKey}
-                  onChange={(event) => onUpdate({ transcriptionApiKey: event.target.value })}
+                  placeholder="gsk_… / sk-…"
+                  value={profileKey}
+                  onChange={(event) => setProfileKey(event.target.value)}
                 />
               </div>
               <div>
                 <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Model</label>
                 <input
                   className="field"
-                  placeholder="whisper-1"
-                  value={settings.transcriptionApiModel}
-                  onChange={(event) => onUpdate({ transcriptionApiModel: event.target.value })}
+                  placeholder="whisper-large-v3"
+                  value={profileModel}
+                  onChange={(event) => setProfileModel(event.target.value)}
                 />
               </div>
             </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={saveProfile}
+                className="rounded-md bg-gray-900 px-4 py-2 text-[13.5px] font-medium text-white"
+              >
+                {editingProfileId ? 'Save' : 'Add'}
+              </button>
+              {editingProfileId && (
+                <button
+                  type="button"
+                  onClick={cancelProfileEdit}
+                  className="rounded-md border border-gray-300 px-4 py-2 text-[13.5px] font-medium text-gray-700"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+            {editingProfileId && (
+              <div className="mt-1 text-[12px] text-indigo-600">Editing {profileName} — Save to update, Cancel to discard</div>
+            )}
+
+            {/* Saved profiles */}
+            {transcriptionProfiles.length > 0 && (
+              <div className="mt-2">
+                <h4 className="text-[13px] font-medium text-gray-700">Saved Transcription APIs</h4>
+                <ul className="mt-2 space-y-2">
+                  {transcriptionProfiles.map((profile) => {
+                    const isActive = activeProfile?.id === profile.id;
+                    return (
+                      <li
+                        key={profile.id}
+                        className={`flex items-center justify-between gap-3 rounded-md border p-3 ${
+                          isActive ? 'border-emerald-300 bg-emerald-50/50' : 'border-gray-200 bg-white'
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-[13px] font-medium">{profile.name}</span>
+                            {isActive && (
+                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          <div className="truncate text-[11px] text-gray-500">{profile.model}</div>
+                          <div className="truncate text-[10px] text-gray-400" title={profile.baseUrl}>
+                            {profile.baseUrl}
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-3">
+                          {!isActive && (
+                            <button
+                              type="button"
+                              onClick={() => useProfile(profile.id)}
+                              className="text-[12px] font-medium text-emerald-700 hover:underline"
+                            >
+                              Use
+                            </button>
+                          )}
+                          <button type="button" onClick={() => startEditProfile(profile)} className="text-[12px] text-indigo-600 hover:underline">
+                            Edit
+                          </button>
+                          <button type="button" onClick={() => deleteProfile(profile.id)} className="text-[12px] text-red-600 hover:underline">
+                            Delete
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => void testTranscription()}
-                disabled={testingTranscription}
+                disabled={testingTranscription || !activeProfile}
                 className="rounded-md border border-gray-300 px-4 py-2 text-[13px] font-medium text-gray-700 disabled:opacity-50"
               >
                 {testingTranscription ? 'Testing…' : 'Test connection'}
@@ -397,7 +562,7 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
               {transcriptionStatus && <span className="text-[12px] text-gray-600">{transcriptionStatus}</span>}
             </div>
             <p className="text-[11px] text-gray-400">
-              Every ~3 s of audio is sent to <code>{'{baseUrl}'}/audio/transcriptions</code> (multipart WAV). Works with OpenAI whisper‑1, Groq whisper‑large‑v3, and self‑hosted faster‑whisper servers. Audio never leaves the device only while Local is selected.
+              Every ~3 s of audio is sent to <code>{'{baseUrl}'}/audio/transcriptions</code> (multipart WAV). Works with OpenAI whisper-1, Groq whisper-large-v3, and self-hosted faster-whisper servers. Test connection checks the <span className="font-medium">active</span> saved API. Audio never leaves the device only while Local is selected.
             </p>
           </div>
         )}
