@@ -179,6 +179,7 @@ Copy-Item "$env:TEMP\ic-backup.json" "$env:APPDATA\interview-copilot\interview-c
 3. Click **Test** next to the model name — you should see a short response.
 4. Under **Transcription**, confirm the provider is **Local (offline)** (default). If the local model mis-hears questions, switch to **API (cloud)**: add a saved API (name, Base URL, key, model — e.g. Groq `whisper-large-v3`), make sure it shows **Active**, then click **Test connection** (see section 9.1).
 5. Start listening with `Ctrl+Shift+L` and say anything — the transcript appears under the command bar.
+6. (Recommended) Upload your resume under **Settings → Resume**, then paste the answer-style prompt from **section 9.3** into **Settings → Instructions**.
 
 ## 9.1 Transcription providers (v1.2.0+)
 
@@ -249,3 +250,22 @@ OpenRouter, Cerebras) with exact Base URLs and model IDs for:
 
 Each entry includes signup links, where the free limits live, and the
 verification result so you know it worked on 2026-11-18.
+
+## 9.3 Interview answer style — Settings → Instructions (v1.2.0+)
+
+The **Instructions** field (**Settings** tab) is prepended to every AI request
+as `CANDIDATE INSTRUCTIONS (follow strictly):` — it controls *how* the copilot
+answers (format, tone, length), not which model runs.
+
+See **[INSTRUCTIONS.md](./INSTRUCTIONS.md)** — a paste-ready prompt (1,489
+chars, under the 2000-char cap shown as `n / 2000` in the UI). It tells the
+model to:
+
+* **Anchor on your resume** — real skills/projects/years only; never invent companies;
+* **Detect the question type** — technical (1–2 spoken lines + ≤20-line code, default Python), behavioural/HR (STAR, simple spoken English, 45–90 s), or other (short, confident, plain English);
+* **Format for glanceability** — speakable line first, plain text, no markdown headers, ~150 words unless you ask for detail.
+
+Upload your resume first (**Settings → Resume**) so rule 1 and the STAR rule have
+something to anchor to. The change is in-memory and effective on the **next
+answer** — no restart. The file also includes tuning variants (pure-coding
+interviews, HR-only roles, longer answers, different default code language).

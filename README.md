@@ -46,6 +46,11 @@ Nothing is sent anywhere except the endpoint you configure.
 > coding and reasoning (Gemini, Groq, NVIDIA NIM, OpenRouter, Cerebras), with
 > exact Base URLs and model IDs you can paste into Custom API.
 
+> **Interview answer style:** see [INSTRUCTIONS.md](./INSTRUCTIONS.md) — a
+> paste-ready **Instructions** prompt for Settings → Instructions (resume
+> anchoring, technical vs behavioural/HR vs non-tech handling, speakable
+> plain-English answers, 1,489 chars). Applies to the very next answer.
+
 ## Transcription
 
 You choose how speech becomes text in **Settings → API → Transcription**:

@@ -109,6 +109,7 @@ InterviewCopilot/
 ├─ release/                    electron-builder output (installer + win-unpacked)
 ├─ ENGINEERING_GUIDE.md        this file
 ├─ PROVIDERS.md                verified free API providers/models (answers, vision, code, reasoning)
+├─ INSTRUCTIONS.md             paste-ready prompt for Settings → Instructions (answer style)
 ├─ README.md                   user-facing overview
 ├─ CLAUDE.md                   short brief for AI coding agents
 ├─ MULTI_AGENT_PROJECT_PLAN.md historical plan + final status
@@ -285,6 +286,12 @@ settings.selectedModel = "openai:gpt-4o"          → built-in provider
 See `PROVIDERS.md` for a verified (Nov 2026) catalogue of free/fast
 OpenAI-compatible endpoints and model IDs for answers, vision, coding and
 reasoning (Gemini, Groq, NIM, OpenRouter, Cerebras).
+
+See `INSTRUCTIONS.md` for a paste-ready prompt for the **Settings →
+Instructions** field (`buildSystemPrompt()`, injected as
+`CANDIDATE INSTRUCTIONS (follow strictly):`, truncated at 2000 chars). The
+shipped block is 1,489 chars: resume-anchored answers, type detection
+(technical / behavioural-HR / other), speakable line first, plain text.
 
 On startup, if the saved model is not in that list it is replaced by the first
 available one (or `''`). `''` produces the error
