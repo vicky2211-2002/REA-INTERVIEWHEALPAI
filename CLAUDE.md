@@ -130,8 +130,11 @@ for audio; loopback happens in the renderer.
 | Lazy Whisper models | `%APPDATA%\interview-copilot\whisper-models` |
 | Temp WAVs | `%TEMP%\interview-copilot-whisper` |
 
-`settingsVersion` is `2`; migration 2 changes the default Whisper model from
-`large-v3` to `base` so a fresh install does not attempt a 3 GB download.
+`settingsVersion` is `3`; migration 2 moved the default Whisper model from
+`large-v3` to `base` so a fresh install does not attempt a 3 GB download, and
+migration 3 seeds a saved transcription profile from the legacy flat
+`transcriptionApi*` fields when an API was configured (the profile list is the
+UI source of truth; flat fields remain a fallback).
 
 Model resolution in `settings.selectedModel`:
 

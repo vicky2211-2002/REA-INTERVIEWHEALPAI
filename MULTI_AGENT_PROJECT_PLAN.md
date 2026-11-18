@@ -2,7 +2,7 @@
 
 **Project:** InterviewCopilot - Exact replica of interviewhelpai.com with customizations  
 **Date:** 2026-11-18  
-**Status:** SHIPPED — v1.0.0 built, end-to-end verified, pushed to GitHub  
+**Status:** HISTORICAL — planned/shipped as v1.0.0 (verified, pushed). Current release is **v1.2.0** (saved transcription APIs); see `INSTALL_UPDATE.md` § 9 and `ENGINEERING_GUIDE.md` for current state  
 **Reference:** `AGENT_SKILLS_SETUP.md` for agent definitions
 
 ---  
