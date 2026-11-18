@@ -9,7 +9,7 @@ resume-anchored), read [`INSTRUCTIONS.md`](./INSTRUCTIONS.md).
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.2.0 — transcription supports a selectable **Local
+hide/restore). Version 1.2.1 — transcription supports a selectable **Local
 (offline whisper.cpp)** or **API (OpenAI-compatible `/audio/transcriptions`)**
 provider. The API mode manages **multiple saved endpoints** (Settings → API →
 Transcription → Add / Edit / Use / Delete; persisted as `transcriptionProfiles`
@@ -19,7 +19,12 @@ named profile on first launch of v1.2.0). Verified end-to-end with Groq's free
 NVIDIA custom chat models `OK` via in-app Test, `test-transcription` IPC OK
 (success on Groq key, clean HTTP 401 on a bad key), profile add / switch /
 delete selection logic exercised via IPC, API path drops phantom fillers on
-near-silent clips.
+near-silent clips. v1.2.1: the OS cursor never changes over the overlay
+(plain arrow everywhere — no hand/pointer/I-beam tell during screen share);
+provider errors are key-sanitized before reaching the UI/toast/log; pressing
+Answer with no captured audio shows a small neutral toast instead of the red
+answer card; preflight failures (`NO_CONTEXT` / `NO_MODEL`) drop the answer
+card.
 
 ---
 
@@ -142,8 +147,9 @@ Model resolution in `settings.selectedModel`:
 - `custom:<id>` → entry from `customModels`
 - bare name → generic OpenAI-compatible endpoint
 
-If nothing resolves, the app shows
-`No AI model selected. Open the API tab and add your key.`
+If nothing resolves, the app shows a neutral toast
+`No AI model configured — open Settings → API` (the Answer card is dropped,
+not opened in red).
 
 ---
 

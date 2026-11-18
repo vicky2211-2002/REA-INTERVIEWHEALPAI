@@ -88,6 +88,11 @@ Either way:
 - **Resume Context** — pick a PDF/DOCX/TXT resume; its text is added to every prompt.
 - **Instructions** — up to 2000 characters, auto-saved.
 - **Ultra Undetectable Mode** — hides the window from screen capture/recording.
+  The cursor never changes over the overlay either (always a plain arrow — no
+  hand/pointer/I-beam over invisible widgets during a screen share), and
+  provider errors are sanitized so no API key can appear in the UI (v1.2.1).
+  Pressing Answer with no audio captured shows a small neutral toast, not a red
+  error card.
 
 ## Development
 

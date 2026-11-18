@@ -145,6 +145,18 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * Provider errors sometimes echo the rejected key (OpenAI-style messages do).
+ * Never let a gsk_/nvapi-/sk-/Bearer token reach the UI, the toast, or the log.
+ */
+function sanitizeProviderMessage(text: string): string {
+  return text
+    .replace(/gsk_[A-Za-z0-9_-]+/g, 'gsk_…')
+    .replace(/nvapi-[A-Za-z0-9_-]+/g, 'nvapi-…')
+    .replace(/sk-[A-Za-z0-9_-]{6,}/g, 'sk-…')
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer …');
+}
+
 function createTray() {
   try {
     const iconPath = trayIconFile();
@@ -202,17 +214,27 @@ async function resolveImages(extra?: string[]): Promise<string[]> {
   return shots.slice(-3);
 }
 
-async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: string }> {
+async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: string; code?: string }> {
   const settings = currentSettings();
   const modelId = settings.selectedModel;
-  if (!modelId) return { ok: false, error: 'No AI model selected. Open the API tab and add your key.' };
+  if (!modelId) {
+    return {
+      ok: false,
+      error: 'No AI model configured. Open Settings → API.',
+      code: 'NO_MODEL',
+    };
+  }
 
   let prompt = request.question?.trim() || '';
 
   if (request.mode === 'answer') {
     const context = buildQuestionContext();
     if (!context && !prompt) {
-      return { ok: false, error: 'No interview audio captured yet. Start listening first.' };
+      return {
+        ok: false,
+        error: 'No interview audio captured yet. Start listening first.',
+        code: 'NO_CONTEXT',
+      };
     }
     prompt = [
       'A question was just asked in a live interview. Give the candidate a strong, ready-to-speak answer.',
@@ -267,10 +289,10 @@ async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: st
   } catch (error) {
     clearTimeout(watchdog);
     settled = true;
-    const message = error instanceof Error ? error.message : String(error);
+    const message = sanitizeProviderMessage(error instanceof Error ? error.message : String(error));
     console.error('[Main] ask failed:', message);
     send('ai-response-error', { id: request.id, error: message });
-    return { ok: false, error: message };
+    return { ok: false, error: message, code: 'PROVIDER_ERROR' };
   }
 }
 

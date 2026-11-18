@@ -294,8 +294,9 @@ shipped block is 1,489 chars: resume-anchored answers, type detection
 (technical / behavioural-HR / other), speakable line first, plain text.
 
 On startup, if the saved model is not in that list it is replaced by the first
-available one (or `''`). `''` produces the error
-`No AI model selected. Open the API tab and add your key.`
+available one (or `''`). `''` means no model is selected, and pressing Answer
+shows a neutral toast `No AI model configured — open Settings → API` (the
+Answer card is dropped rather than opened in red).
 
 ### 5.4 Ask pipeline
 
@@ -314,6 +315,21 @@ main handleAsk()
 `answer` requires transcript context (otherwise it returns a helpful error).
 `screen` works with no transcript. `chat` sends the user's text plus the last
 6 chat turns.
+
+**Error contract (v1.2.1):** `handleAsk` returns
+`{ ok, error?, code? }`. Preflight failures return `NO_CONTEXT` (answer
+pressed with no captured audio / transcript) or `NO_MODEL` (no `selectedModel`
+resolves) — the renderer drops the just-created Answer card and shows a small
+neutral toast instead of the red error card. Provider failures return
+`PROVIDER_ERROR`; `sanitizeProviderMessage()` strips `gsk_…` / `nvapi-…` /
+`sk-…` / `Bearer …` from the message **before** it reaches the UI or the log
+(OpenAI-style provider errors echo the rejected key otherwise). The Answer
+card renders remaining errors in muted italic text, not red.
+
+**Cursor stealth (v1.2.1):** the renderer forces `cursor: default !important`
+on every element, so the OS cursor never turns into hand/pointer/I-beam over
+the invisible overlay during a screen share — a viewer sees a plain desktop
+cursor at all times. Clicks and text selection still work.
 
 ### 5.5 Settings
 

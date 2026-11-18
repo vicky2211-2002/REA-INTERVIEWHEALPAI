@@ -167,3 +167,12 @@
 .fade-in {
   animation: fade-in 0.16s ease-out;
 }
+
+/* Stealth: the OS cursor must never change over the overlay. During a screen
+   share the viewer keeps seeing a plain arrow — no hand/pointer/I-beam
+   "invisible hotspot" tell, present or not. Clicks still work. */
+*,
+*::before,
+*::after {
+  cursor: default !important;
+}

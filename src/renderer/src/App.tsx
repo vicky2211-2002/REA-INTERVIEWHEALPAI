@@ -125,15 +125,29 @@ export default function App() {
       setBusy(true);
       const result = await window.electronAPI.ask({ id, mode, question: '' });
       if (!result.ok) {
-        setAnswers((previous) =>
-          previous.map((entry) =>
-            entry.id === id ? { ...entry, streaming: false, error: result.error || 'Request failed' } : entry,
-          ),
-        );
+        if (result.code === 'NO_CONTEXT' || result.code === 'NO_MODEL') {
+          // Preflight failure (no audio / no model) — not an interview error:
+          // drop the just-created card and use a small neutral toast instead.
+          setAnswers((previous) => previous.filter((entry) => entry.id !== id));
+          setAnswerIndex(Math.max(0, answers.length - 1));
+          showToast({
+            message:
+              result.code === 'NO_CONTEXT'
+                ? 'No audio captured yet — start listening (Ctrl+Shift+L)'
+                : 'No AI model configured — open Settings → API',
+            kind: 'info',
+          });
+        } else {
+          setAnswers((previous) =>
+            previous.map((entry) =>
+              entry.id === id ? { ...entry, streaming: false, error: result.error || 'Request failed' } : entry,
+            ),
+          );
+        }
       }
       setBusy(false);
     },
-    [answers.length, settings],
+    [answers.length, settings, showToast],
   );
 
   const sendChat = useCallback(

@@ -117,7 +117,7 @@ export function AnswerView({ answers, index, onIndexChange, onClose, scrollSigna
         className="md max-h-[min(520px,calc(100vh-210px))] overflow-auto px-6 py-5 text-[14px] leading-relaxed text-gray-800"
       >
         {answer.error ? (
-          <p className="text-red-500">{answer.error}</p>
+          <p className="italic text-gray-500">{answer.error}</p>
         ) : (
           <div className={answer.streaming ? 'caret' : ''}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{answer.text || ' '}</ReactMarkdown>

@@ -263,7 +263,7 @@ export interface ElectronAPI {
   onWhisperStatus: (callback: (status: WhisperStatus) => void) => () => void;
 
   // AI
-  ask: (request: AskRequest) => Promise<{ ok: boolean; error?: string }>;
+  ask: (request: AskRequest) => Promise<{ ok: boolean; error?: string; code?: string }>;
   cancelAsk: () => void;
   onAnswerChunk: (callback: (payload: { id: string; chunk: string }) => void) => () => void;
   onAnswerEnd: (callback: (payload: { id: string; tokensUsed?: number }) => void) => () => void;

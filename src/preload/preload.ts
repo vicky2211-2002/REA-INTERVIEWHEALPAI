@@ -40,7 +40,7 @@ const api = {
   onWhisperStatus: (cb: (status: WhisperStatus) => void) => subscribe('whisper-status', cb),
 
   // AI
-  ask: (request: AskRequest): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke('ask', request),
+  ask: (request: AskRequest): Promise<{ ok: boolean; error?: string; code?: string }> => ipcRenderer.invoke('ask', request),
   cancelAsk: () => ipcRenderer.send('cancel-ask'),
   onAnswerChunk: (cb: (p: { id: string; chunk: string }) => void) => subscribe('ai-response-chunk', cb),
   onAnswerEnd: (cb: (p: { id: string; tokensUsed?: number }) => void) => subscribe('ai-response-end', cb),
