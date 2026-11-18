@@ -338,6 +338,20 @@ rendered **inside** the page — the capture protection covers them, so a
 screen-share viewer never sees them (native Chromium tooltips are separate,
 unprotected OS popups).
 
+**Screen vision (v1.2.3):** `Settings.screenVisionEnabled` (default `true`)
+controls whether "Analyse Screen" attaches a screenshot at all. The screenshot
+is captured/stored in the main process and only included when the mode is
+`screen` and the toggle is ON; the renderer never sends image bytes. An
+optional `Settings.visionModel` (empty = same as `selectedModel`) routes
+screenshot requests to a dedicated multimodal model while text answers keep
+using the answer model. `handleAsk` wraps `generateResponseStreamWithVision`
+in a try/catch — if the provider rejects the image (`isMultimodalRejection`,
+e.g. vLLM started without `--enable-multimodal`), it retries
+`generateResponseStream` text-only with a "no image available" note and emits
+a neutral toast (`Model has no multimodal processing — answering without the
+screenshot`), so the candidate still gets an answer. Settings → Settings tab →
+"Screen analysis (vision)" exposes the toggle and the model dropdown.
+
 ### 5.5 Settings
 
 `electron-store` file: `%APPDATA%\interview-copilot\interview-copilot-settings.json`.

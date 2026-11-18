@@ -9,7 +9,7 @@ resume-anchored), read [`INSTRUCTIONS.md`](./INSTRUCTIONS.md).
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.2.2 — transcription supports a selectable **Local
+hide/restore). Version 1.2.3 — transcription supports a selectable **Local
 (offline whisper.cpp)** or **API (OpenAI-compatible `/audio/transcriptions`)**
 provider. The API mode manages **multiple saved endpoints** (Settings → API →
 Transcription → Add / Edit / Use / Delete; persisted as `transcriptionProfiles`
@@ -27,7 +27,14 @@ answer card; preflight failures (`NO_CONTEXT` / `NO_MODEL`) drop the answer
 card. v1.2.2: every native HTML `title` tooltip (e.g. "Click to open dashboard",
 "Start listening") was replaced with in-page `.tip[data-tip]` CSS tooltips —
 native Chromium tooltips are separate OS popups **not** covered by the window's
-capture protection, so they were visible on screen shares.
+capture protection, so they were visible on screen shares. v1.2.3: new **Screen
+analysis (vision)** toggle in Settings (default ON) controls whether screenshots
+are sent to the model; an optional **Vision model** dropdown lets you dedicate a
+multimodal model to screenshots only ("Same as answer model" by default). If the
+model rejects the image (e.g. vLLM without `--enable-multimodal`), the app now
+automatically retries text-only with a neutral toast instead of a dead answer
+card — the screen prompt notes that no image is available and the answer is
+grounded in the transcript.
 
 ---
 

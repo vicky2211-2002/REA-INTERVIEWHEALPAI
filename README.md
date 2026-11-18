@@ -95,6 +95,11 @@ Either way:
   tooltips hidden by the same protection — native OS tooltips are never shown
   (v1.2.2). Pressing Answer with no audio captured shows a small neutral
   toast, not a red error card.
+- **Screen vision control** (v1.2.3) — choose whether "Analyse Screen" sends
+  screenshots to the model, and optionally dedicate a multimodal model to
+  screenshots (Settings → Screen analysis). If your endpoint rejects images
+  (e.g. vLLM without `--enable-multimodal`), the app automatically answers
+  from the transcript instead of failing.
 
 ## Development
 

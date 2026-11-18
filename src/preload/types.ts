@@ -98,6 +98,10 @@ export interface Settings {
   googleApiKey: string;
   customApiKey: string;
   customBaseUrl: string;
+  /** Send screenshots to the model for screen analysis (requires a multimodal model). */
+  screenVisionEnabled: boolean;
+  /** Optional model id used ONLY for screen/vision requests (empty = same as answer model). */
+  visionModel: string;
   temperature: number;
   maxTokens: number;
   autoTriggerAI: boolean;

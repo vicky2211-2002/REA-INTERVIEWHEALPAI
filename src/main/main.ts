@@ -157,6 +157,11 @@ function sanitizeProviderMessage(text: string): string {
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer …');
 }
 
+/** True when the provider rejected image input because multimodal is disabled/unsupported. */
+function isMultimodalRejection(text: string): boolean {
+  return /(--enable-multimodal|multimodal|modalit)/i.test(text);
+}
+
 function createTray() {
   try {
     const iconPath = trayIconFile();
@@ -216,14 +221,24 @@ async function resolveImages(extra?: string[]): Promise<string[]> {
 
 async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: string; code?: string }> {
   const settings = currentSettings();
-  const modelId = settings.selectedModel;
-  if (!modelId) {
+  const baseModelId = settings.selectedModel;
+  if (!baseModelId) {
     return {
       ok: false,
       error: 'No AI model configured. Open Settings → API.',
       code: 'NO_MODEL',
     };
   }
+
+  // Vision is optional: the user may run a text-only endpoint (e.g. vLLM
+  // without --enable-multimodal) or dedicate a separate vision model.
+  const visionEnabled = settings.screenVisionEnabled !== false;
+  let images: string[] = [];
+  if (request.mode === 'screen' && visionEnabled) {
+    images = await resolveImages(request.images);
+  }
+  const visionModelId = (settings.visionModel || '').trim();
+  const modelId = images.length > 0 && visionModelId ? visionModelId : baseModelId;
 
   let prompt = request.question?.trim() || '';
 
@@ -246,8 +261,12 @@ async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: st
       .join('\n\n');
   } else if (request.mode === 'screen') {
     const context = buildQuestionContext();
+    const intro =
+      images.length > 0
+        ? 'Analyse the attached screenshot of the interview and answer the question shown or asked.'
+        : 'No screenshot is attached (vision is disabled) — answer from the conversation transcript only.';
     prompt = [
-      'Analyse the attached screenshot of the interview and answer the question shown or asked.',
+      intro,
       context ? `Conversation so far:\n${context}` : '',
       prompt ? `Question: ${prompt}` : '',
       'Give a concise, complete answer the candidate can read out loud.',
@@ -255,8 +274,6 @@ async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: st
       .filter(Boolean)
       .join('\n\n');
   }
-
-  const images = request.mode === 'screen' ? await resolveImages(request.images) : [];
 
   // Never let a stalled provider leave the UI stuck in a "streaming" state.
   let settled = false;
@@ -272,12 +289,32 @@ async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: st
     };
 
     if (images.length > 0) {
-      await aiProviderManager.generateResponseStreamWithVision(
-        prompt,
-        modelId,
-        images[images.length - 1],
-        onChunk,
-      );
+      try {
+        await aiProviderManager.generateResponseStreamWithVision(
+          prompt,
+          modelId,
+          images[images.length - 1],
+          onChunk,
+        );
+      } catch (visionError) {
+        const raw = visionError instanceof Error ? visionError.message : String(visionError);
+        if (isMultimodalRejection(raw)) {
+          // e.g. vLLM started without --enable-multimodal: retry text-only so
+          // the candidate still gets an answer instead of a dead card.
+          console.warn('[Main] vision model rejected the image, retrying text-only:', sanitizeProviderMessage(raw));
+          toast('Model has no multimodal processing — answering without the screenshot', 'info');
+          await aiProviderManager.generateResponseStream(
+            `${prompt}\n\nNOTE: No image is available to you — answer from the transcript only.`,
+            modelId,
+            onChunk,
+          );
+          clearTimeout(watchdog);
+          settled = true;
+          send('ai-response-end', { id: request.id });
+          return { ok: true };
+        }
+        throw visionError;
+      }
     } else {
       await aiProviderManager.generateResponseStream(prompt, modelId, onChunk);
     }

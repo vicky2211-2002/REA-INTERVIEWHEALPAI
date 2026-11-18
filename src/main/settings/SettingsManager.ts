@@ -26,6 +26,8 @@ const DEFAULT_SETTINGS: Settings = {
   googleApiKey: '',
   customApiKey: '',
   customBaseUrl: '',
+  screenVisionEnabled: true,
+  visionModel: '',
 
   // AI Generation Settings
   temperature: 0.7,

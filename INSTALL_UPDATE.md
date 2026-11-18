@@ -6,7 +6,7 @@ update an existing install without breaking anything.
 | Item | Value |
 |------|-------|
 | Installer you build | `release/InterviewCopilot Setup <version>.exe` |
-| Latest installer in this repo | `C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.2.exe` |
+| Latest installer in this repo | `C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.3.exe` |
 | GitHub repo | https://github.com/vicky2211-2002/REA-INTERVIEWHEALPAI.git |
 | Default install folder | `C:\Users\<YourName>\AppData\Local\Programs\InterviewCopilot\InterviewCopilot.exe` |
 | Settings file (user data) | `%APPDATA%\interview-copilot\interview-copilot-settings.json` |
@@ -36,13 +36,13 @@ Before you install or update:
 
 ### Option A — Run the installer with UI (recommended for most users)
 ```powershell
-Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.2.exe"
+Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.3.exe"
 ```
 Follow the wizard; accept the default install folder.
 
 ### Option B — Silent install (for automated/scripted setups)
 ```powershell
-Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.2.exe" -ArgumentList '/S' -Wait
+Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.3.exe" -ArgumentList '/S' -Wait
 ```
 The `/S` flag runs the NSIS installer silently. The app installs to
 `%LOCALAPPDATA%\Programs\InterviewCopilot`.
@@ -61,19 +61,19 @@ The `/S` flag runs the NSIS installer silently. The app installs to
 
 ---
 
-## 3. Update an existing install (e.g., v1.0.0 → v1.2.2)
+## 3. Update an existing install (e.g., v1.0.0 → v1.2.3)
 
 1. **Close the running app** (same command as section 1).
 2. Run the new installer (either with UI or silently):
    ```powershell
-   Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.2.exe"
+   Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.3.exe"
    # or silently:
-   # Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.2.exe" -ArgumentList '/S' -Wait
+   # Start-Process "C:\Users\Shivani Babar\InterviewCopilot\release\InterviewCopilot Setup 1.2.3.exe" -ArgumentList '/S' -Wait
    ```
 3. Your settings and models are preserved — the installer only overwrites program files.
-4. Launch the app and confirm **footer/version** shows the new version (1.2.2) and that your saved custom models are still present in **Settings → API**.
+4. Launch the app and confirm **footer/version** shows the new version (1.2.3) and that your saved custom models are still present in **Settings → API**.
 
-> **Note:** v1.1.0 added the transcription provider switch (Local/API), v1.1.1 verified both providers end‑to‑end, v1.2.0 adds **saved transcription endpoints** (add / edit / use / delete multiple STT APIs in Settings → API → Transcription), and v1.2.1 makes the overlay undetectable to cursor tracking (plain arrow cursor everywhere, no hand/pointer/I-beam changes over invisible widgets) and sanitizes provider errors so no API key can appear in the UI. v1.2.2 replaces every native hover tooltip (e.g. "Click to open dashboard") with in-page ones hidden by the capture protection — native OS tooltips were visible on screen shares. The installer picks up the updated renderer automatically. Upgrading from ≤ v1.1.x seeds your existing flat API configuration (e.g. the Groq `whisper-large-v3` setup) into a saved profile named `whisper-large-v3` on first launch — nothing is lost.
+> **Note:** v1.1.0 added the transcription provider switch (Local/API), v1.1.1 verified both providers end‑to‑end, v1.2.0 adds **saved transcription endpoints** (add / edit / use / delete multiple STT APIs in Settings → API → Transcription), and v1.2.1 makes the overlay undetectable to cursor tracking (plain arrow cursor everywhere, no hand/pointer/I-beam changes over invisible widgets) and sanitizes provider errors so no API key can appear in the UI. v1.2.2 replaces every native hover tooltip (e.g. "Click to open dashboard") with in-page ones hidden by the capture protection — native OS tooltips were visible on screen shares. v1.2.3 adds a Screen vision toggle + optional vision model in Settings, and automatically falls back to a text-only answer when a model rejects screenshots (e.g. vLLM without --enable-multimodal). The installer picks up the updated renderer automatically. Upgrading from ≤ v1.1.x seeds your existing flat API configuration (e.g. the Groq `whisper-large-v3` setup) into a saved profile named `whisper-large-v3` on first launch — nothing is lost.
 
 ---
 
@@ -129,7 +129,7 @@ npx electron-builder --win nsis
 # Output: release\InterviewCopilot Setup <version>.exe
 ```
 
-Version is controlled by `package.json` → `"version": "1.2.2"` (bump as needed).
+Version is controlled by `package.json` → `"version": "1.2.3"` (bump as needed).
 
 ---
 
@@ -138,7 +138,7 @@ Version is controlled by `package.json` → `"version": "1.2.2"` (bump as needed
 | What | Path |
 |------|------|
 | Source | `C:\Users\Shivani Babar\InterviewCopilot\` |
-| Installer | `release\InterviewCopilot Setup 1.2.2.exe` |
+| Installer | `release\InterviewCopilot Setup 1.2.3.exe` |
 | Installed app | `C:\Users\Shivani Babar\AppData\Local\Programs\InterviewCopilot\InterviewCopilot.exe` |
 | User settings | `%APPDATA%\interview-copilot\interview-copilot-settings.json` |
 | Whisper models | `%APPDATA%\interview-copilot\whisper-models\` (downloaded on demand) |
@@ -155,7 +155,7 @@ Version is controlled by `package.json` → `"version": "1.2.2"` (bump as needed
 Get-Process -Name InterviewCopilot -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # Install silently
-Start-Process "C:\path\to\InterviewCopilot Setup 1.2.2.exe" -ArgumentList '/S' -Wait
+Start-Process "C:\path\to\InterviewCopilot Setup 1.2.3.exe" -ArgumentList '/S' -Wait
 
 # Launch with debug port for smoke test
 Start-Process "$env:LOCALAPPDATA\Programs\InterviewCopilot\InterviewCopilot.exe" -ArgumentList "--remote-debugging-port=9228"

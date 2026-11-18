@@ -84,4 +84,4 @@ That's it — save happens automatically as you type/paste.
 *The 2000-character cap is enforced in the app's prompt builder
 (`src/main/ai/AIProviderManager.ts`, `buildSystemPrompt()` — injected as
 `CANDIDATE INSTRUCTIONS (follow strictly):`). Character count of the block
-above: 1,489 (excluding the outer code fences). Verified against v1.2.2.*
+above: 1,489 (excluding the outer code fences). Verified against v1.2.3.*

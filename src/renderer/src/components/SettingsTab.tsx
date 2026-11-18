@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, FileText, Sparkles } from 'lucide-react';
-import { Settings } from '@shared/types';
+import { AIModelOption, Settings } from '@shared/types';
 import { Toggle } from './Keycap';
 
 interface SettingsTabProps {
@@ -29,6 +29,23 @@ const LANGUAGES = [
 
 export function SettingsTab({ settings, onUpdate, appVersion, onPickResume, resumeLoading }: SettingsTabProps) {
   const [instructions, setInstructions] = useState(settings.instructions || '');
+  const [availableModels, setAvailableModels] = useState<AIModelOption[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    window.electronAPI
+      .getAvailableModels()
+      .then((models) => {
+        if (!cancelled) setAvailableModels(models || []);
+      })
+      .catch(() => {
+        // Model list unavailable — keep the "Same as answer model" default.
+        if (!cancelled) setAvailableModels([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="space-y-4 px-6 pb-6 pt-5">
@@ -78,6 +95,50 @@ export function SettingsTab({ settings, onUpdate, appVersion, onPickResume, resu
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        </div>
+      </section>
+
+      {/* Screen analysis (vision) */}
+      <section className="section">
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <h3 className="text-[16px] font-semibold text-gray-900">Screen analysis (vision)</h3>
+            <p className="mt-1 text-[14px] text-gray-500">
+              Send screenshots to the model for “Analyse Screen”. Your endpoint must have multimodal processing
+              enabled (e.g. vLLM needs <code className="rounded bg-gray-100 px-1 py-0.5 text-[12px]">--enable-multimodal</code>).
+              If the model rejects the image, the app falls back to a text-only answer from the transcript.
+            </p>
+          </div>
+          <Toggle
+            checked={settings.screenVisionEnabled !== false}
+            onChange={(next) => onUpdate({ screenVisionEnabled: next })}
+            label="Screen vision"
+          />
+        </div>
+
+        <div className="mt-4">
+          <span className="label-caps">Vision model (optional)</span>
+          <div className="relative">
+            <select
+              value={settings.visionModel || ''}
+              disabled={settings.screenVisionEnabled === false}
+              onChange={(event) => onUpdate({ visionModel: event.target.value })}
+              className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-[14px] text-gray-900 outline-none focus:border-emerald-400 disabled:opacity-50"
+            >
+              <option value="">Same as answer model (default)</option>
+              {availableModels.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name || model.id}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          </div>
+          <p className="mt-2 text-[12.5px] text-gray-400">
+            Use a multimodal model just for screenshots (e.g. NIM{' '}
+            <code className="rounded bg-gray-100 px-1 py-0.5 text-[12px]">nvidia/nemotron-3-nano-omni-30b-a3b-reasoning</code>),
+            or keep “Same as answer model”. With the toggle OFF, answers come from the conversation transcript only.
+          </p>
         </div>
       </section>
 
