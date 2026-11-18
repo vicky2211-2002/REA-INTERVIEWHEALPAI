@@ -531,7 +531,26 @@ node tools/cdp_test_profiles.cjs 9224   # add dummy profile (bad key) → select
 `cdp_test_profiles.cjs` starts from the real settings, so it proves the whole
 selection path without touching the user's Groq configuration.
 
-### 7.7 Regression checklist
+### 7.7 Screenshot capture, overlay movement, mock interview
+
+```powershell
+node tools/cdp_check_capture.cjs 9228  # Ctrl+H capture pipeline (same main-process captureScreen())
+node tools/cdp_check_move.cjs 9228     # Ctrl+←/→ clamp: translateX both directions, ±75% of the
+                                       # work-area width (v1.2.8); restores windowOffsetX afterwards
+node tools/cdp_mock_interview.cjs 9228 # 10 mock questions (HR/technical/behavioral) via
+                                       # ask(mode:'chat') through the real configured model
+```
+
+`cdp_check_capture.cjs` exercises the same `captureScreen()` the Ctrl+H
+shortcut uses, so a passing run means the shortcut's capture path works.
+`cdp_check_move.cjs` nudges `move-x` far past both limits and asserts the
+clamp is symmetric and the stored offset is restored afterwards.
+`cdp_mock_interview.cjs` replays a full mock interview against the model and
+endpoint configured in the app and prints answers + latency; set
+`SAVE_REPORT=1` to also write `mock_interview_report.md` in the repo root
+(that file is not committed).
+
+### 7.8 Regression checklist
 
 | Area touched | Must re-run |
 | --- | --- |

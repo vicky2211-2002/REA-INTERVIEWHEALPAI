@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Verify the ±25% horizontal movement clamp (v1.2.6) via CDP.
+ * Verify the horizontal movement clamp via CDP.
  * Leaves windowOffsetX exactly where it started.
  */
 const PORT = process.argv[2] || '9228';
@@ -42,17 +42,18 @@ const PORT = process.argv[2] || '9228';
   const start = (await evaluate('window.electronAPI.getSettings()')).windowOffsetX;
   console.log('windowOffsetX at start:', start);
 
-  // Push right well beyond any possible limit (25 nudges x 40 px = +1000 px)
-  await evaluate('(async () => { for (let i = 0; i < 25; i++) { window.electronAPI.moveX(40); await new Promise(r => setTimeout(r, 20)); } })()');
+  // Push right well beyond any possible limit (60 nudges x 40 px = +2400 px;
+  // the v1.2.8 limit is ±75% of the work-area width, ~1152 px @1536)
+  await evaluate('(async () => { for (let i = 0; i < 60; i++) { window.electronAPI.moveX(40); await new Promise(r => setTimeout(r, 20)); } })()');
   await new Promise((r) => setTimeout(r, 300));
   const rightMax = (await evaluate('window.electronAPI.getSettings()')).windowOffsetX;
-  console.log('after +1000px nudges:', rightMax);
+  console.log('right clamp:', rightMax);
 
   // Push left the same distance to measure the negative side
-  await evaluate('(async () => { for (let i = 0; i < 50; i++) { window.electronAPI.moveX(-40); await new Promise(r => setTimeout(r, 20)); } })()');
+  await evaluate('(async () => { for (let i = 0; i < 120; i++) { window.electronAPI.moveX(-40); await new Promise(r => setTimeout(r, 20)); } })()');
   await new Promise((r) => setTimeout(r, 300));
   const leftMax = (await evaluate('window.electronAPI.getSettings()')).windowOffsetX;
-  console.log('after -2000px nudges:', leftMax);
+  console.log('left clamp:', leftMax);
 
   // Restore original offset exactly
   const restoreDelta = start - leftMax;
@@ -63,7 +64,7 @@ const PORT = process.argv[2] || '9228';
 
   const symmetric = rightMax === -leftMax;
   console.log('symmetric limits:', symmetric ? 'YES' : 'NO');
-  console.log('25%-screen sized limits (~384 @1536 DIP):', `+${rightMax} / ${leftMax}`);
+  console.log('limit (±75% of the work-area width, ~1152 @1536 DIP):', `+${rightMax} / ${leftMax}`);
   process.exit(restored === start && symmetric ? 0 : 1);
 })().catch((error) => {
   console.error('move clamp check failed:', error.message);

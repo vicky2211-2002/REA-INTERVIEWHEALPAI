@@ -143,7 +143,7 @@ Version is controlled by `package.json` → `"version": "1.2.8"` (bump as needed
 | User settings | `%APPDATA%\interview-copilot\interview-copilot-settings.json` |
 | Whisper models | `%APPDATA%\interview-copilot\whisper-models\` (downloaded on demand) |
 | Temp audio | `%TEMP%\interview-copilot-whisper\` |
-| Tools | `tools/cdp_smoke.cjs`, `tools/cdp_audio_e2e.cjs`, `tools/mock_provider.cjs`, `tools/make_speech.ps1`, `tools/win_visible.ps1` |
+| Tools | `tools/cdp_smoke.cjs`, `tools/cdp_audio_e2e.cjs`, `tools/mock_provider.cjs`, `tools/make_speech.ps1`, `tools/win_visible.ps1`, `tools/cdp_test_apis.cjs`, `tools/cdp_test_profiles.cjs`, `tools/cdp_check_capture.cjs`, `tools/cdp_check_move.cjs`, `tools/cdp_mock_interview.cjs` |
 | Git remote | `https://github.com/vicky2211-2002/REA-INTERVIEWHEALPAI.git` (branch `master`) |
 
 ---

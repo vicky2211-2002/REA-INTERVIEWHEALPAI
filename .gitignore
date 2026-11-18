@@ -18,4 +18,7 @@ screens/
 *.mp3
 *.wav
 *.png.tmp
-*.tmpout*/
+*.tmpout*
+
+# Mock interview reports (SAVE_REPORT=1) — may contain resume-derived answers
+mock_interview_report.md

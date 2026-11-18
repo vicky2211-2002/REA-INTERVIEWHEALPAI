@@ -83,6 +83,9 @@ node tools/cdp_audio_e2e.cjs 9223 20000       # audio -> transcript assertions
 powershell -File tools/win_visible.ps1 -ProcessName InterviewCopilot   # hidden?
 node tools/cdp_test_apis.cjs 9224             # flip provider, test-transcription + test-model
 node tools/cdp_test_profiles.cjs 9224         # saved transcription profile add/switch/delete flows
+node tools/cdp_check_capture.cjs 9228         # Ctrl+H capture pipeline (same captureScreen() path)
+node tools/cdp_check_move.cjs 9228            # Ctrl+←/→ ±75% translateX clamp; restores windowOffsetX
+node tools/cdp_mock_interview.cjs 9228        # 10-question mock interview via ask(mode:'chat'); SAVE_REPORT=1 to keep the report
 ```
 
 ---
