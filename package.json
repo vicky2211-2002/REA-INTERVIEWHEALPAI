@@ -1,0 +1,116 @@
+{
+  "name": "interview-copilot",
+  "version": "1.0.0",
+  "description": "Real-time AI interview assistant with local Whisper transcription and custom API support",
+  "author": "Shivani Babar",
+  "license": "MIT",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev:renderer": "vite",
+    "dev": "electron .",
+    "build": "npm run typecheck && npm run build:main && npm run build:renderer && npm run build:preload",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build:main": "esbuild src/main/main.ts --bundle --platform=node --target=node18 --format=cjs --external:electron --outfile=dist/main/main.js",
+    "build:preload": "esbuild src/preload/preload.ts --bundle --platform=node --target=node18 --format=cjs --external:electron --outfile=dist/preload/preload.js",
+    "build:renderer": "vite build",
+    "start": "electron .",
+    "package": "electron-builder --win nsis"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.14.0",
+    "@google/generative-ai": "^0.2.0",
+    "clsx": "^2.0.0",
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.0",
+    "katex": "^0.16.47",
+    "lucide-react": "^0.294.0",
+    "mammoth": "^1.13.0",
+    "openai": "^4.20.0",
+    "pdf-parse": "^1.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "tailwind-merge": "^2.0.0",
+    "uuid": "^9.0.0",
+    "zustand": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/katex": "^0.16.8",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^9.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.0",
+    "esbuild": "^0.21.5",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.0.0"
+  },
+  "build": {
+    "appId": "com.interviewcopilot.app",
+    "productName": "InterviewCopilot",
+    "copyright": "Copyright © 2026",
+    "asar": true,
+    "npmRebuild": false,
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/whisper",
+        "to": "whisper",
+        "filter": [
+          "whisper-cli.exe",
+          "*.dll",
+          "models/ggml-base.bin",
+          "models/ggml-tiny.bin"
+        ]
+      },
+      {
+        "from": "resources",
+        "to": ".",
+        "filter": [
+          "icon.png",
+          "icon.ico",
+          "tray-icon.png"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "InterviewCopilot",
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

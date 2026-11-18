@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Design tokens — light dashboard surface + dark floating chrome, matching a
+   desktop overlay assistant.
+--------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --bg: 0 0% 100%;
+    --fg: 222 14% 12%;
+    --muted-fg: 220 9% 46%;
+    --border: 220 13% 91%;
+    --accent: 160 84% 39%;
+    --accent-fg: 0 0% 100%;
+    --keycap: 245 75% 62%;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    background: transparent;
+  }
+
+  body {
+    color: hsl(var(--fg));
+    overflow: hidden;
+  }
+
+  input,
+  textarea {
+    user-select: text;
+  }
+}
+
+@layer components {
+  .chrome {
+    @apply bg-[#0c0c0e]/90 text-white ring-1 ring-white/10 backdrop-blur-xl;
+  }
+
+  .chrome-btn {
+    @apply h-7 rounded-md border border-white/25 px-3 text-[12px] font-medium text-white/95
+           transition-colors hover:bg-white/10 active:bg-white/15;
+  }
+
+  .card {
+    @apply rounded-xl bg-white shadow-[0_24px_70px_-12px_rgba(0,0,0,0.45)] ring-1 ring-black/5;
+  }
+
+  .section {
+    @apply rounded-[10px] border border-gray-200 p-6;
+  }
+
+  .field {
+    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-[14px] text-gray-900
+           outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100;
+  }
+
+  .label-caps {
+    @apply mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500;
+  }
+}
+
+/* Answer / chat markdown */
+.md h1,
+.md h2,
+.md h3 {
+  @apply mb-2 mt-3 font-semibold text-gray-900;
+}
+.md h1 {
+  @apply text-[17px];
+}
+.md h2 {
+  @apply text-[15px];
+}
+.md h3 {
+  @apply text-[14px];
+}
+.md p {
+  @apply mb-2 leading-relaxed;
+}
+.md ul {
+  @apply mb-2 list-disc space-y-1 pl-5;
+}
+.md ol {
+  @apply mb-2 list-decimal space-y-1 pl-5;
+}
+.md code {
+  @apply rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[12.5px] text-gray-800;
+}
+.md pre {
+  @apply mb-2 overflow-x-auto rounded-lg bg-gray-900 p-3 text-[12.5px] text-gray-100;
+}
+.md pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+.md strong {
+  @apply font-semibold text-gray-900;
+}
+.md table {
+  @apply mb-2 w-full border-collapse text-[13px];
+}
+.md th,
+.md td {
+  @apply border border-gray-200 px-2 py-1 text-left;
+}
+
+/* Dark variant used inside the chat surface */
+.md-dark {
+  @apply text-white/90;
+}
+.md-dark h1,
+.md-dark h2,
+.md-dark h3,
+.md-dark strong {
+  @apply text-white;
+}
+.md-dark code {
+  @apply bg-white/10 text-white;
+}
+.md-dark pre {
+  @apply bg-black/50;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.caret::after {
+  content: '▍';
+  margin-left: 1px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.6s infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fade-in 0.16s ease-out;
+}

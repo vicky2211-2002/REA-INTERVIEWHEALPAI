@@ -1,0 +1,21 @@
+# Node & builds
+node_modules/
+dist/
+release/
+*.log
+!package-lock.json
+.DS_Store
+
+# Whisper models (large, download on demand; never commit >100 MB binaries)
+resources/whisper/models/*.bin
+
+# Legacy ffmpeg (should never ship; kept out of git)
+resources/ffmpeg/
+
+# Temporary CDP/smoke test artifacts
+out/
+screens/
+*.mp3
+*.wav
+*.png.tmp
+*.tmp
