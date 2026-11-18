@@ -1,6 +1,6 @@
 {
   "name": "interview-copilot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Real-time AI interview assistant with local Whisper transcription and custom API support",
   "author": "Shivani Babar",
   "license": "MIT",

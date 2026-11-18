@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AIModelOption, AudioDevice, Settings } from '@shared/types';
+import { AIModel, AIModelOption, AudioDevice, Settings } from '@shared/types';
 
 interface ApiTabProps {
   settings: Settings;
@@ -38,6 +38,7 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
   const [customModel, setCustomModel] = useState('');
   const [status, setStatus] = useState('');
   const [testing, setTesting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const refreshModels = () => {
     window.electronAPI
@@ -68,32 +69,66 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
     refreshDevices();
   }, []);
 
-  const addCustom = async () => {
-    if (!customBaseUrl.trim() || !customModel.trim()) {
+  const saveCustom = async () => {
+    const baseUrl = customBaseUrl.trim();
+    const apiKey = customKey.trim();
+    const modelId = customModel.trim();
+    if (!baseUrl || !modelId) {
       setStatus('Base URL and model name are required.');
       return;
     }
-    const name = customModel.trim();
-    const apiKey = customKey.trim();
-    const baseUrl = customBaseUrl.trim();
 
-    await window.electronAPI.updateSettings({
-      customBaseUrl: baseUrl,
-      customApiKey: apiKey,
-    });
-    await window.electronAPI.addCustomModel({
-      id: name,
-      name,
+    const payload: AIModel = {
+      id: editingId ?? modelId,
+      name: modelId,
       provider: 'custom',
-      model: name,
+      model: modelId,
       apiKey,
       baseUrl,
       enabled: true,
-    });
-    // Available model ids are namespaced, e.g. "custom:llama-3.3-70b".
-    await window.electronAPI.updateSettings({ selectedModel: `custom:${name}` });
-    setStatus(`Added and selected ${name}`);
-    refreshModels();
+    };
+
+    try {
+      await window.electronAPI.updateSettings({ customBaseUrl: baseUrl, customApiKey: apiKey });
+      await window.electronAPI.addCustomModel(payload);
+      if (editingId) {
+        setStatus(`Saved ${modelId}`);
+      } else {
+        await window.electronAPI.updateSettings({ selectedModel: `custom:${modelId}` });
+        setStatus(`Added and selected ${modelId}`);
+      }
+      setEditingId(null);
+      refreshModels();
+    } catch (error) {
+      setStatus(`Failed — ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  const startEditModel = (model: AIModel) => {
+    setEditingId(model.id);
+    setCustomBaseUrl(model.baseUrl || '');
+    setCustomModel(model.model || '');
+    setCustomKey(model.apiKey || '');
+    setStatus(`Editing ${model.name}`);
+  };
+
+  const deleteModel = async (id: string) => {
+    try {
+      await window.electronAPI.removeCustomModel(id);
+      if (editingId === id) setEditingId(null);
+      setStatus('Deleted.');
+      refreshModels();
+    } catch (error) {
+      setStatus(`Delete failed — ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setCustomBaseUrl('');
+    setCustomKey('');
+    setCustomModel('');
+    setStatus('');
   };
 
   const testModel = async () => {
@@ -171,12 +206,45 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
             />
             <button
               type="button"
-              onClick={() => void addCustom()}
+              onClick={() => void saveCustom()}
               className="shrink-0 rounded-md bg-gray-900 px-4 py-2 text-[13.5px] font-medium text-white"
             >
-              Add
+              {editingId ? 'Save' : 'Add'}
             </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="shrink-0 rounded-md border border-gray-300 px-4 py-2 text-[13.5px] font-medium text-gray-700"
+              >
+                Cancel
+              </button>
+            )}
           </div>
+          {editingId && (
+            <div className="mt-1 text-[12px] text-indigo-600">Editing {customModel} — Save to update, Cancel to discard</div>
+          )}
+
+          {settings.customModels.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-[13px] font-medium text-gray-700">Saved Custom Models</h4>
+              <ul className="mt-2 space-y-2">
+                {settings.customModels.map((model) => (
+                  <li key={model.id} className="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-white p-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-medium">{model.name}</div>
+                      <div className="truncate text-[11px] text-gray-500">{model.model}</div>
+                      <div className="truncate text-[10px] text-gray-400" title={model.baseUrl}>{model.baseUrl}</div>
+                    </div>
+                    <div className="flex shrink-0 gap-3">
+                      <button type="button" onClick={() => startEditModel(model)} className="text-[12px] text-indigo-600 hover:underline">Edit</button>
+                      <button type="button" onClick={() => deleteModel(model.id)} className="text-[12px] text-red-600 hover:underline">Delete</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </section>
 
