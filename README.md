@@ -17,7 +17,7 @@ a dark chat bar, and an answer card — not a browser page.
 | Reset Context | `Ctrl+R` | Clears transcript, screenshots, answers, and chat |
 | Start / Stop Listening | `Ctrl+Shift+L` | Toggles live transcription |
 | Take Screenshot | `Ctrl+H` | Manual capture; each press shows a toast confirming the shot was captured (attach more than one for multi-screen problems) |
-| Delete Last Screenshot | `Ctrl+Delete` | Removes the newest screenshot from context |
+| Delete Last Screenshot | `Ctrl+Delete` | Removes the newest screenshot from context (toast confirms) |
 | Show / Hide App | `Ctrl+\` | Hides the overlay completely; press again to bring it back |
 | Move App | `Ctrl+←` / `Ctrl+→` | Nudges the overlay horizontally |
 | Transparency | `Ctrl+[` / `Ctrl+]` | Lowers / raises overlay opacity |

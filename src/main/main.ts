@@ -356,6 +356,18 @@ async function captureScreen(): Promise<string | null> {
   return dataUrl;
 }
 
+function deleteLastScreenshot(): void {
+  const removed = screenshots.pop();
+  send('screenshots-update', screenshots);
+  if (!removed) {
+    toast('No screenshots to delete', 'info');
+  } else if (screenshots.length === 0) {
+    toast('Last screenshot deleted — none left', 'info');
+  } else {
+    toast(`Screenshot deleted (${screenshots.length} left)`, 'info');
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Shortcuts
 // ---------------------------------------------------------------------------
@@ -385,9 +397,8 @@ function registerShortcuts() {
       }
     });
   });
-  bind('CommandOrControl+Delete', async () => {
-    screenshots.pop();
-    send('screenshots-update', screenshots);
+  bind('CommandOrControl+Delete', () => {
+    deleteLastScreenshot();
   });
   bind('CommandOrControl+\\', () => toggleVisibility());
   bind('CommandOrControl+Q', () => {
@@ -525,8 +536,7 @@ function setupIPC() {
   ipcMain.handle('get-screenshots', () => screenshots);
 
   ipcMain.handle('delete-screenshot', () => {
-    screenshots.pop();
-    send('screenshots-update', screenshots);
+    deleteLastScreenshot();
   });
 
   // Window / UI ---------------------------------------------------------
