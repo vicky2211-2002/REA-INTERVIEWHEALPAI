@@ -39,6 +39,8 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
   const [status, setStatus] = useState('');
   const [testing, setTesting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [testingTranscription, setTestingTranscription] = useState(false);
+  const [transcriptionStatus, setTranscriptionStatus] = useState('');
 
   const refreshModels = () => {
     window.electronAPI
@@ -101,6 +103,19 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
       refreshModels();
     } catch (error) {
       setStatus(`Failed — ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  const testTranscription = async () => {
+    setTestingTranscription(true);
+    setTranscriptionStatus('');
+    try {
+      const res = await window.electronAPI.testTranscription();
+      setTranscriptionStatus(res.success ? res.response || 'Connection OK' : `Failed — ${res.error || 'unknown error'}`);
+    } catch (error) {
+      setTranscriptionStatus(`Failed — ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setTestingTranscription(false);
     }
   };
 
@@ -279,38 +294,113 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
       <section className="section">
         <h3 className="text-[16px] font-semibold text-gray-900">Transcription</h3>
         <p className="mt-1 text-[14px] text-gray-500">
-          Runs locally with whisper.cpp. The Base model ships with the app; larger models download once on first use.
+          Choose how interview audio becomes text — fully offline with whisper.cpp, or an OpenAI‑compatible speech‑to‑text API for higher accuracy.
         </p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <div>
-            <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Whisper model</label>
-            <select
-              className="field"
-              value={settings.whisperModel}
-              onChange={(event) => onUpdate({ whisperModel: event.target.value as Settings['whisperModel'] })}
-            >
-              {WHISPER_MODELS.map((model) => (
-                <option key={model.id} value={model.id}>
-                  {model.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Spoken language</label>
-            <select
-              className="field"
-              value={settings.whisperLanguage}
-              onChange={(event) => onUpdate({ whisperLanguage: event.target.value })}
-            >
-              {LANGUAGES.map((language) => (
-                <option key={language.id} value={language.id}>
-                  {language.label}
-                </option>
-              ))}
-            </select>
-          </div>
+
+        {/* Provider toggle */}
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg border border-gray-200 bg-gray-50 p-1">
+          <button
+            type="button"
+            onClick={() => onUpdate({ transcriptionProvider: 'local' })}
+            className={`rounded-md px-3 py-2 text-[13px] font-medium transition ${
+              settings.transcriptionProvider === 'local' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            Local (offline)
+            <span className="block text-[11px] font-normal text-gray-400">whisper.cpp · no network</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onUpdate({ transcriptionProvider: 'api' })}
+            className={`rounded-md px-3 py-2 text-[13px] font-medium transition ${
+              settings.transcriptionProvider === 'api' ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            API (cloud)
+            <span className="block text-[11px] font-normal text-gray-400">OpenAI‑compatible /audio/transcriptions</span>
+          </button>
         </div>
+
+        {settings.transcriptionProvider === 'local' ? (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Whisper model (downloaded once)</label>
+              <select
+                className="field"
+                value={settings.whisperModel}
+                onChange={(event) => onUpdate({ whisperModel: event.target.value as Settings['whisperModel'] })}
+              >
+                {WHISPER_MODELS.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-[11px] text-gray-400">Base ships bundled; larger models download on first use.</p>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Spoken language</label>
+              <select
+                className="field"
+                value={settings.whisperLanguage}
+                onChange={(event) => onUpdate({ whisperLanguage: event.target.value })}
+              >
+                {LANGUAGES.map((language) => (
+                  <option key={language.id} value={language.id}>
+                    {language.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Transcription API Base URL</label>
+                <input
+                  className="field"
+                  placeholder="https://api.openai.com/v1"
+                  value={settings.transcriptionApiBaseUrl}
+                  onChange={(event) => onUpdate({ transcriptionApiBaseUrl: event.target.value })}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-gray-700">API Key</label>
+                <input
+                  className="field"
+                  type="password"
+                  placeholder="sk-…"
+                  value={settings.transcriptionApiKey}
+                  onChange={(event) => onUpdate({ transcriptionApiKey: event.target.value })}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Model</label>
+                <input
+                  className="field"
+                  placeholder="whisper-1"
+                  value={settings.transcriptionApiModel}
+                  onChange={(event) => onUpdate({ transcriptionApiModel: event.target.value })}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void testTranscription()}
+                disabled={testingTranscription}
+                className="rounded-md border border-gray-300 px-4 py-2 text-[13px] font-medium text-gray-700 disabled:opacity-50"
+              >
+                {testingTranscription ? 'Testing…' : 'Test connection'}
+              </button>
+              {transcriptionStatus && <span className="text-[12px] text-gray-600">{transcriptionStatus}</span>}
+            </div>
+            <p className="text-[11px] text-gray-400">
+              Every ~3 s of audio is sent to <code>{'{baseUrl}'}/audio/transcriptions</code> (multipart WAV). Works with OpenAI whisper‑1, Groq whisper‑large‑v3, and self‑hosted faster‑whisper servers. Audio never leaves the device only while Local is selected.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Audio */}

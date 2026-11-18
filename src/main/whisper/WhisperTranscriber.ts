@@ -34,7 +34,7 @@ export class WhisperTranscriber extends EventEmitter {
   private downloading: Promise<string> | null = null;
 
   onTranscript: ((segment: TranscriptSegment) => void) | null = null;
-  onStatus: ((status: { status: 'loading' | 'ready' | 'error'; progress?: number; error?: string }) => void) | null = null;
+  onStatus: ((status: { status: 'loading' | 'ready' | 'error'; progress?: number; error?: string; model?: string }) => void) | null = null;
 
   constructor(settings: Settings) {
     super();
@@ -69,6 +69,14 @@ export class WhisperTranscriber extends EventEmitter {
     if (this.isInitialized) return;
     this.emitStatus({ status: 'loading', progress: 0 });
 
+    // API provider â€” no whisper binary/model needed; audio is POSTed per chunk.
+    if (this.settings.transcriptionProvider === 'api') {
+      this.isInitialized = true;
+      this.emitStatus({ status: 'ready', progress: 100, model: `api:${this.settings.transcriptionApiModel || 'whisper-1'}` });
+      console.log('[Whisper] transcription provider: API â†’', this.settings.transcriptionApiBaseUrl || '(not configured)');
+      return;
+    }
+
     try {
       const whisperPath = await this.getWhisperBinary();
       if (!whisperPath) {
@@ -82,7 +90,7 @@ export class WhisperTranscriber extends EventEmitter {
         this.emitStatus({ status: 'ready', progress: 100 });
         console.log('[Whisper] ready:', path.basename(existing));
       } else {
-        // Loaded but model not on disk yet — downloaded on first use.
+        // Loaded but model not on disk yet â€” downloaded on first use.
         this.emitStatus({ status: 'loading', progress: 0 });
         console.log('[Whisper] binary ready, model', this.modelFilename(), 'will download on first use');
       }
@@ -135,6 +143,76 @@ export class WhisperTranscriber extends EventEmitter {
     return downloaded;
   }
 
+  /** POST a WAV buffer to an OpenAI-compatible /audio/transcriptions endpoint. */
+  private async transcribeWithApi(wavFile: string): Promise<string> {
+    const s = this.settings;
+    const base = (s.transcriptionApiBaseUrl || '').trim().replace(/\/+$/, '');
+    const key = (s.transcriptionApiKey || '').trim();
+    const model = (s.transcriptionApiModel || 'whisper-1').trim();
+    if (!base) throw new Error('Transcription API Base URL not set â€” configure it in Settings â†’ API â†’ Transcription.');
+    if (!key) throw new Error('Transcription API key not set â€” add it in Settings â†’ API â†’ Transcription.');
+
+    const wav = fs.readFileSync(wavFile);
+    const form = new FormData();
+    form.append('file', new Blob([new Uint8Array(wav)], { type: 'audio/wav' }), path.basename(wavFile));
+    form.append('model', model);
+    form.append('response_format', 'json');
+    if (this.languageCode && this.languageCode !== 'auto') form.append('language', this.languageCode);
+
+    const res = await fetch(`${base}/audio/transcriptions`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}` },
+      body: form,
+    });
+    const raw = await res.text();
+    if (!res.ok) {
+      throw new Error(`Transcription API HTTP ${res.status}: ${raw.slice(0, 300)}`);
+    }
+    try {
+      const parsed = JSON.parse(raw) as { text?: string };
+      return String(parsed.text ?? '').trim();
+    } catch {
+      return raw.trim(); // response_format=text servers return plain text
+    }
+  }
+
+  /** Verify the configured transcription API with a 1-second silent clip. */
+  async testApiConnection(): Promise<{ success: boolean; response?: string; error?: string }> {
+    try {
+      const s = this.settings;
+      const base = (s.transcriptionApiBaseUrl || '').trim().replace(/\/+$/, '');
+      const key = (s.transcriptionApiKey || '').trim();
+      const model = (s.transcriptionApiModel || 'whisper-1').trim();
+      if (!base) return { success: false, error: 'Base URL is required (e.g. https://api.openai.com/v1).' };
+      if (!key) return { success: false, error: 'API key is required.' };
+
+      const pcm = Buffer.alloc(this.SAMPLE_RATE * this.BYTES_PER_SAMPLE); // 1s s16le silence
+      const wav = this.makeWav(pcm);
+      const form = new FormData();
+      form.append('file', new Blob([new Uint8Array(wav)], { type: 'audio/wav' }), 'test.wav');
+      form.append('model', model);
+      form.append('response_format', 'json');
+
+      const res = await fetch(`${base}/audio/transcriptions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}` },
+        body: form,
+      });
+      const raw = await res.text();
+      if (!res.ok) {
+        return { success: false, error: `HTTP ${res.status}: ${raw.slice(0, 300)}` };
+      }
+      try {
+        const parsed = JSON.parse(raw) as { text?: string };
+        return { success: true, response: parsed.text?.trim() ? parsed.text.trim() : '(API reachable â€” empty transcription of silence, as expected)' };
+      } catch {
+        return { success: true, response: raw.slice(0, 300) || '(API reachable)' };
+      }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+
   private async downloadModel(modelName: string): Promise<string> {
     if (this.downloading) return this.downloading;
 
@@ -181,8 +259,8 @@ export class WhisperTranscriber extends EventEmitter {
     }
   }
 
-  /** Wrap raw PCM in a minimal WAV header so whisper.cpp can decode it. */
-  private writeWav(pcm: Buffer, file: string): void {
+  /** Wrap raw PCM in a minimal WAV header. */
+  private makeWav(pcm: Buffer): Buffer {
     const header = Buffer.alloc(44);
     const byteRate = this.SAMPLE_RATE * this.BYTES_PER_SAMPLE;
     header.write('RIFF', 0);
@@ -198,7 +276,12 @@ export class WhisperTranscriber extends EventEmitter {
     header.writeUInt16LE(16, 34);
     header.write('data', 36);
     header.writeUInt32LE(pcm.length, 40);
-    fs.writeFileSync(file, Buffer.concat([header, pcm]));
+    return Buffer.concat([header, pcm]);
+  }
+
+  /** Write raw PCM to a WAV file whisper.cpp can decode. */
+  private writeWav(pcm: Buffer, file: string): void {
+    fs.writeFileSync(file, this.makeWav(pcm));
   }
 
   async processAudio(audioData: Buffer): Promise<void> {
@@ -237,6 +320,15 @@ export class WhisperTranscriber extends EventEmitter {
       const wavFile = path.join(tempDir, `audio_${Date.now()}.wav`);
       this.writeWav(pcm, wavFile);
 
+      if (this.settings.transcriptionProvider === 'api') {
+        const text = await this.transcribeWithApi(wavFile);
+        try { fs.unlinkSync(wavFile); } catch {}
+        if (text.trim()) {
+          this.onTranscript?.(this.createTranscriptSegment({ text }));
+        }
+        return;
+      }
+
       const whisperPath = await this.getWhisperBinary();
       const modelPath = await this.getModelPath();
       if (!whisperPath) throw new Error('whisper.cpp binary not available');
@@ -273,7 +365,7 @@ export class WhisperTranscriber extends EventEmitter {
 
   private runWhisper(binary: string, modelPath: string, wavFile: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      // Note: -pp/--print-progress is a boolean flag in whisper.cpp — never pass
+      // Note: -pp/--print-progress is a boolean flag in whisper.cpp â€” never pass
       // a value, otherwise it is parsed as an extra input file.
       const args = [
         '-m', modelPath,
@@ -344,7 +436,7 @@ export class WhisperTranscriber extends EventEmitter {
     return questionPatterns.some((p) => p.test(text)) ? 'interviewer' : 'candidate';
   }
 
-  private emitStatus(status: { status: 'loading' | 'ready' | 'error'; progress?: number; error?: string }) {
+  private emitStatus(status: { status: 'loading' | 'ready' | 'error'; progress?: number; error?: string; model?: string }) {
     this.onStatus?.(status);
   }
 

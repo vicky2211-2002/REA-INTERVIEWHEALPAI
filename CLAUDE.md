@@ -6,7 +6,9 @@ Short, accurate context for this repository. For depth, read
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.0.0.
+hide/restore). Version 1.1.0 — transcription now supports a selectable
+**Local (offline whisper.cpp)** or **API (OpenAI-compatible
+`/audio/transcriptions`)** provider.
 
 ---
 
@@ -15,7 +17,11 @@ hide/restore). Version 1.0.0.
 A Windows desktop interview assistant (Electron overlay):
 
 1. Captures system audio loopback (+ optional mic) in the renderer.
-2. Transcribes locally with whisper.cpp (`whisper-cli.exe`, bundled Base model).
+2. Transcribes with a **selectable provider** — offline whisper.cpp
+   (`whisper-cli.exe`, bundled Base model) or an OpenAI-compatible
+   speech-to-text API (OpenAI `whisper-1`, Groq `whisper-large-v3`,
+   self-hosted faster-whisper). Default is Local; switch in
+   Settings → API → Transcription (takes effect on the next audio chunk, no restart).
 3. Answers with a **user-supplied** AI endpoint (OpenAI-compatible custom API, or
    OpenAI/Anthropic/Google/NVIDIA keys). No bundled subscription, no login.
 4. Can answer from a screenshot for vision models ("Analyse Screen").
@@ -56,7 +62,7 @@ powershell -File tools/win_visible.ps1 -ProcessName InterviewCopilot   # hidden?
 | --- | --- |
 | `src/main/main.ts` | Window creation, IPC handlers, global shortcuts, tray, screenshots, `handleAsk` orchestration, 120 s watchdog |
 | `src/main/ai/AIProviderManager.ts` | Provider registry, `resolveProvider`, streaming + vision, custom endpoints |
-| `src/main/whisper/WhisperTranscriber.ts` | 3 s buffering, silence gate, filler/hallucination filter, WAV writing, `whisper-cli` spawn, lazy model download |
+| `src/main/whisper/WhisperTranscriber.ts` | 3 s buffering, silence gate, filler/hallucination filter, WAV writing, `whisper-cli` spawn, lazy model download, or POSTs WAV to an OpenAI-compatible `/audio/transcriptions` endpoint when `transcriptionProvider: 'api'` (IPC: `test-transcription` → `testApiConnection()`) |
 | `src/main/settings/SettingsManager.ts` | electron-store defaults + `settingsVersion` migrations |
 | `src/main/context/ContextManager.ts` | Resume/JD parsing (pdf-parse v1, mammoth, txt) |
 | `src/main/stealth/StealthManager.ts` | Win32 helpers (capture exclusion, toolwindow) — only capture exclusion is wired |

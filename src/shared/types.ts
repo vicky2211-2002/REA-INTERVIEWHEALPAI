@@ -98,6 +98,12 @@ export interface Settings {
   whisperModel: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3';
   whisperLanguage: string;
   whisperDevice: 'cpu' | 'cuda' | 'auto';
+  // Transcription provider: offline whisper.cpp, or an OpenAI-compatible
+  // /audio/transcriptions API (whisper-1, Groq whisper-large-v3, …)
+  transcriptionProvider: 'local' | 'api';
+  transcriptionApiBaseUrl: string;
+  transcriptionApiKey: string;
+  transcriptionApiModel: string;
 
   // Ultra Mode / Stealth
   ultraModeEnabled: boolean;
@@ -235,6 +241,7 @@ export interface ElectronAPI {
   addCustomModel: (model: AIModel) => Promise<void>;
   removeCustomModel: (modelId: string) => Promise<void>;
   testModel: (modelId: string, prompt: string) => Promise<{ success: boolean; response?: string; error?: string }>;
+  testTranscription: () => Promise<{ success: boolean; response?: string; error?: string }>;
 
   // Audio
   getAudioDevices: () => Promise<AudioDevice[]>;

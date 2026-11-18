@@ -35,6 +35,12 @@ const DEFAULT_SETTINGS: Settings = {
   whisperModel: 'base',
   whisperLanguage: 'en',
   whisperDevice: 'auto',
+  // Transcription: local offline whisper.cpp by default; switch to 'api' to
+  // send each audio chunk to an OpenAI-compatible speech-to-text endpoint.
+  transcriptionProvider: 'local',
+  transcriptionApiBaseUrl: '',
+  transcriptionApiKey: '',
+  transcriptionApiModel: 'whisper-1',
 
   // Ultra Mode / Stealth — defaults match reference app (invisible on screen share)
   ultraModeEnabled: true,
@@ -261,6 +267,9 @@ export class SettingsManager {
       whisperModel: this.settings.whisperModel,
       whisperLanguage: this.settings.whisperLanguage,
       whisperDevice: this.settings.whisperDevice,
+      transcriptionProvider: this.settings.transcriptionProvider,
+      transcriptionApiBaseUrl: this.settings.transcriptionApiBaseUrl,
+      transcriptionApiModel: this.settings.transcriptionApiModel,
     };
   }
 

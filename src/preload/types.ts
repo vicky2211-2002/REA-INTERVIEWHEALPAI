@@ -98,6 +98,10 @@ export interface Settings {
   whisperModel: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3';
   whisperLanguage: string;
   whisperDevice: 'cpu' | 'cuda' | 'auto';
+  transcriptionProvider: 'local' | 'api';
+  transcriptionApiBaseUrl: string;
+  transcriptionApiKey: string;
+  transcriptionApiModel: string;
 
   // Ultra Mode / Stealth
   ultraModeEnabled: boolean;
@@ -185,6 +189,7 @@ export interface IPCChannels {
   'add-custom-model': AIModel;
   'remove-custom-model': string;
   'test-model': { modelId: string; prompt: string };
+  'test-transcription': void;
   'upload-resume': { filePath: string };
   'upload-job-description': { filePath: string };
   'pick-file': { kind: 'resume' | 'job-description' };
@@ -235,6 +240,7 @@ export interface ElectronAPI {
   addCustomModel: (model: AIModel) => Promise<void>;
   removeCustomModel: (modelId: string) => Promise<void>;
   testModel: (modelId: string, prompt: string) => Promise<{ success: boolean; response?: string; error?: string }>;
+  testTranscription: () => Promise<{ success: boolean; response?: string; error?: string }>;
 
   // Audio
   getAudioDevices: () => Promise<AudioDevice[]>;

@@ -393,6 +393,14 @@ function setupIPC() {
     }
   });
 
+  ipcMain.handle('test-transcription', async () => {
+    try {
+      return await whisperTranscriber.testApiConnection();
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
   // Audio ---------------------------------------------------------------
   ipcMain.handle('get-audio-devices', async () => {
     // Enumerated in the renderer with navigator.mediaDevices; here we only

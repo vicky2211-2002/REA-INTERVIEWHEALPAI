@@ -23,7 +23,8 @@ how to inspect any Electron app you want to compare against.
 A Windows desktop interview assistant:
 
 1. Captures **system audio (loopback)** and optionally the microphone.
-2. Transcribes it **locally** with whisper.cpp (no cloud, no API key).
+2. Transcribes it with a **selectable provider** — offline whisper.cpp
+   (default), or an OpenAI‑compatible `/audio/transcriptions` API.
 3. Generates answers with an **AI model the user configures** (any
    OpenAI-compatible endpoint, or OpenAI/Anthropic/Google/NVIDIA keys).
 4. Can also answer from a **screenshot** ("Analyse Screen") for vision models.
@@ -41,7 +42,7 @@ Two deliberate product differences:
 | --- | --- | --- |
 | Billing / Pro tab | `Billing` | `API` — you supply the model endpoint |
 | AI access | Bundled subscription | Your own key (or local Ollama/LM Studio) |
-| Transcription | Cloud service | Local whisper.cpp, Base model bundled |
+| Transcription | Cloud service | **Local whisper.cpp** (Base bundled; larger models lazy‑download) **or API** — selected in Settings → API → Transcription; either way 3 s WAV chunks |
 
 ---
 
@@ -166,7 +167,11 @@ Implemented in this order (kept, because each step is independently verifiable):
    `alwaysOnTop('screen-saver')`, `skipTaskbar`, `show: false` → `showInactive()`.
 2. **Click-through** — window ignores the mouse, renderer re-enables it over `[data-ui]`.
 3. **Audio** — Web Audio loopback in the renderer (no FFmpeg, no Stereo Mix).
-4. **Transcription** — 3 s buffers → WAV → `whisper-cli.exe` → transcript segments.
+4. **Transcription** — 3 s buffers → WAV → `whisper-cli.exe` **or**
+   `POST {baseUrl}/audio/transcriptions` (multipart) → transcript segments.
+   The provider is `settings.transcriptionProvider` (`'local'` default, `'api'`
+   optional). In API mode the whisper binary/model is never touched; a test
+   clip can be sent via IPC `test-transcription` → `testApiConnection()`.
 5. **AI** — provider manager with streaming; custom OpenAI-compatible endpoint.
 6. **Screens** — `desktopCapturer` thumbnails, attached as vision input.
 7. **Chrome** — tray, global shortcuts, settings persistence, stealth toggle.
@@ -216,8 +221,11 @@ useAudioCapture.ts                 main.ts                    WhisperTranscriber
 AudioContext(16000)  ──PCM s16──▶  'audio-chunk'  ──────────▶  buffer 3 s
   ├ getUserMedia(chromeMediaSource:'desktop', sourceId)          ├ RMS < 0.004 → discard
   └ optional getUserMedia(mic)                                   ├ write 44-byte WAV header
-                                                                 ├ spawn whisper-cli -m -f -l -nt -np [--no-gpu]
-                                                                 └ stdout → filler filter → segment
+                                                                 └ provider === 'local' ?
+                                                                      spawn whisper-cli -m -f -l -nt -np
+                                                                      : POST {base}/audio/transcriptions (multipart)
+                                                                      → stdout / JSON {"text":…}
+                                                                      → filler filter → segment
 ```
 
 - The loopback source id comes from `desktopCapturer.getSources` in main
@@ -230,6 +238,16 @@ AudioContext(16000)  ──PCM s16──▶  'audio-chunk'  ──────�
   whisper "hears" words in noise and emits phantom segments ("you",
   "Thank you."). A filler list filters what still slips through.
 - `isHallucination` also drops `[MUSIC]`, `(silence)` style annotations.
+- **Transcription providers**: `transcriptionProvider` in settings is `'local'`
+  (default; whisper.cpp, works offline) or `'api'` (OpenAI-compatible speech-to-text —
+  OpenAI `whisper-1`, Groq `whisper-large-v3`, self-hosted faster-whisper). API mode
+  POSTs each 3 s WAV (`response_format=json`, optional `language`) with
+  `Authorization: Bearer <key>`; set Base URL to the `/v1` root — the code appends
+  `/audio/transcriptions`. `initialize()` short-circuits in API mode (no whisper
+  binary/model needed); missing keys throw a clear error that surfaces as a toast.
+  `test-transcription` IPC → `testApiConnection()` sends a 1 s silent WAV so users
+  can verify URL/key/model before relying on it. The spoken-language setting applies
+  to both providers; keys never leave the local settings file.
 
 ### 5.3 Model resolution (AI)
 
@@ -274,6 +292,9 @@ main handleAsk()
 Defaults live in `SettingsManager.DEFAULT_SETTINGS`. Migrations use
 `settingsVersion` (currently `2`, which moved `whisperModel` from
 `large-v3` → `base` so first launch does not try to download 3 GB).
+The `transcriptionProvider` block (`transcriptionApiBaseUrl/Key/Model`) added in
+v1.1.0 has no migration — absent keys fall back to the defaults via electron-store
+(`'local'`, `whisper-1`), so existing installs keep local offline transcription.
 
 ### 5.6 Shortcuts (registered in main, dispatched as `ui-command`)
 
@@ -555,7 +576,10 @@ Release checklist:
 | `The 'screen' module can't be used before the app 'ready' event` | module-level `screen` usage | keep `screen` calls inside `whenReady` |
 | Buttons unclickable | missing `data-ui` on the container | add the attribute |
 | Clicks land on the app instead of the window behind | hover state never re-enabled | ensure `[data-ui]` hit-testing still runs on `mousemove` |
-| No transcript | model missing, mic/loopback failed, or silence gate | `whisper-cli --help`; check `getLoopbackSource`; play a real WAV |
+| No transcript | model missing, mic/loopback failed, or silence gate | `whisper-cli --help`; check `getLoopbackSource`; play a real WAV; or switch Settings → API → Transcription to **API (cloud)** + **Test connection** |
+| Transcription API `HTTP 401/403` | wrong/missing key | Settings → API → Transcription → API Key; sent as `Authorization: Bearer <key>` |
+| Transcription API `HTTP 404` | base URL includes the full endpoint | set Base URL to the root (`https://api.openai.com/v1`) — code appends `/audio/transcriptions` |
+| Transcription garbled with API too | accents/noise in capture | check loopback device, raise speaker volume; API only hears what the PC plays |
 | Transcript says only “you”/“Thank you.” | silence reaching whisper | keep `isSilent` threshold, do not lower it blindly |
 | `error: 1 input file(s) failed` from whisper | a flag was given a value (`--print-progress false`) | booleans take no argument |
 | PDF resume returns empty | scanned/image PDF (no OCR) or pdf-parse v2 installed | use a text PDF; pin `pdf-parse@1.1.1` |

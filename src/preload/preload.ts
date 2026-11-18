@@ -27,6 +27,7 @@ const api = {
   addCustomModel: (model: AIModel): Promise<void> => ipcRenderer.invoke('add-custom-model', model),
   removeCustomModel: (modelId: string): Promise<void> => ipcRenderer.invoke('remove-custom-model', modelId),
   testModel: (modelId: string, prompt: string) => ipcRenderer.invoke('test-model', { modelId, prompt }),
+  testTranscription: () => ipcRenderer.invoke('test-transcription'),
 
   // Audio
   getAudioDevices: (): Promise<AudioDevice[]> => ipcRenderer.invoke('get-audio-devices'),

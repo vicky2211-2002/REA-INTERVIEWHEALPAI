@@ -43,12 +43,20 @@ Nothing is sent anywhere except the endpoint you configure.
 
 ## Transcription
 
-Speech-to-text runs locally with [whisper.cpp](https://github.com/ggerganov/whisper.cpp) —
-no cloud service, no key.
+You choose how speech becomes text in **Settings → API → Transcription**:
 
-- The **Base** model (~142 MB) ships with the installer and works offline.
-- Larger models (small / medium / large-v3) download once into
-  `%APPDATA%\interview-copilot\whisper-models` the first time they are selected.
+- **Local (offline)** — [whisper.cpp](https://github.com/ggerganov/whisper.cpp), no cloud, no key. This is the default.
+  - The **Base** model (~142 MB) ships with the installer and works offline.
+  - Larger models (small / medium / large-v3) download once into
+    `%APPDATA%\interview-copilot\whisper-models` the first time they are selected.
+- **API (cloud)** — every ~3 s of audio is POSTed to an OpenAI‑compatible
+  `…/audio/transcriptions` endpoint (multipart WAV). Works with OpenAI `whisper-1`,
+  Groq `whisper-large-v3`, or any self‑hosted faster‑whisper server.
+  Fill in **Base URL**, **API Key**, and **Model**, then click **Test connection**.
+  Use this when the local models mis-hear technical vocabulary/accents.
+
+Either way:
+
 - Audio is captured with desktop loopback (Web Audio), so Stereo Mix or a virtual
   cable is **not** required. A microphone can be enabled alongside it.
 - Silent audio is discarded before transcription, which prevents phantom
