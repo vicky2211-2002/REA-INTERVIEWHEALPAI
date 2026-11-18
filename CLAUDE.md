@@ -2,7 +2,8 @@
 
 Short, accurate context for this repository. For depth, read
 [`ENGINEERING_GUIDE.md`](./ENGINEERING_GUIDE.md). For user-facing behavior, read
-[`README.md`](./README.md).
+[`README.md`](./README.md). For free/fast API endpoints for answers, vision,
+coding and reasoning, read [`PROVIDERS.md`](./PROVIDERS.md).
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,

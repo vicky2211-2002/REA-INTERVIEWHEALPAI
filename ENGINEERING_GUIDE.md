@@ -108,6 +108,7 @@ InterviewCopilot/
 ├─ dist/                       build output (main.js, preload.js, renderer/)
 ├─ release/                    electron-builder output (installer + win-unpacked)
 ├─ ENGINEERING_GUIDE.md        this file
+├─ PROVIDERS.md                verified free API providers/models (answers, vision, code, reasoning)
 ├─ README.md                   user-facing overview
 ├─ CLAUDE.md                   short brief for AI coding agents
 ├─ MULTI_AGENT_PROJECT_PLAN.md historical plan + final status
@@ -280,6 +281,10 @@ settings.selectedModel = "openai:gpt-4o"          → built-in provider
 - built-in providers appear when their key is set,
 - custom models appear as `custom:<id>` when added with key + base URL,
 - no usable provider ⇒ empty list ⇒ first-run opens the **API** tab.
+
+See `PROVIDERS.md` for a verified (Nov 2026) catalogue of free/fast
+OpenAI-compatible endpoints and model IDs for answers, vision, coding and
+reasoning (Gemini, Groq, NIM, OpenRouter, Cerebras).
 
 On startup, if the saved model is not in that list it is replaced by the first
 available one (or `''`). `''` produces the error

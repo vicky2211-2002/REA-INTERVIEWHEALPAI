@@ -41,6 +41,11 @@ this tab opens automatically.
 
 Nothing is sent anywhere except the endpoint you configure.
 
+> **Free providers & models:** see [PROVIDERS.md](./PROVIDERS.md) — a verified
+> (Nov 2026) list of fast **free** endpoints for answers, vision/image upload,
+> coding and reasoning (Gemini, Groq, NVIDIA NIM, OpenRouter, Cerebras), with
+> exact Base URLs and model IDs you can paste into Custom API.
+
 ## Transcription
 
 You choose how speech becomes text in **Settings → API → Transcription**:

@@ -235,3 +235,17 @@ Notes:
 * The API path applies the same phantom-filler filter as the local path (drops
   “you”/“Thank you.” style hallucinations on near-silent clips).
 * **NVIDIA NIM has no transcription endpoint** — `https://integrate.api.nvidia.com/v1/audio/transcriptions` returns HTTP 404 (verified Nov 2026). NVIDIA keys work for the AI answer models only; use Groq/OpenAI/self-hosted faster-whisper for speech.
+
+## 9.2 Free providers & models for answers/vision/coding/reasoning
+
+See **[PROVIDERS.md](./PROVIDERS.md)** — a verified (Nov 2026) catalogue of fast
+**free** OpenAI-compatible endpoints (Google AI Studio Gemini, Groq, NVIDIA NIM,
+OpenRouter, Cerebras) with exact Base URLs and model IDs for:
+
+* **Answer** — `mistral-large-4-1t-a52b` (NIM), `qwen3.8-27b` (Groq), `gpt-oss-120b` (Cerebras ~3000 tok/s), `gemini-3.8-flash` (free multimodal)
+* **Image upload / vision** — `nemotron-3-nano-omni-30b-a3b-reasoning` or `nemotron-3.5-super-vl-120b-a12b` (NIM, ✅ reads screenshots), Gemini Flash models
+* **Coding** — `gemini-3.8-flash` / `gemini-4-hydrogen` (free), `poolside/laguna-xs-2.1` (NIM), `cohere/north-mini-code:free` (OpenRouter)
+* **Reasoning** — Groq/Cerebras `gpt-oss-120b`, NIM nano-omni (✅ 17×23=391)
+
+Each entry includes signup links, where the free limits live, and the
+verification result so you know it worked on 2026-11-18.
