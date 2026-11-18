@@ -350,7 +350,7 @@ e.g. vLLM started without `--enable-multimodal`), it retries
 `generateResponseStream` text-only with a "no image available" note and emits
 a neutral toast (`Model has no multimodal processing — answering without the
 screenshot`), so the candidate still gets an answer. Settings → Settings tab →
-"Screen analysis (vision)" exposes the toggle and the model dropdown.
+"Screen analysis (vision)" exposes the toggle and the model dropdown. v1.2.4: the `CommandOrControl+H` shortcut toasts on capture (`Screenshot captured (n/5)`) and `registerShortcuts()` toasts when a global shortcut fails to register (previously only a lost console.warn) — both were silent before, so Ctrl+H looked broken.
 
 ### 5.5 Settings
 

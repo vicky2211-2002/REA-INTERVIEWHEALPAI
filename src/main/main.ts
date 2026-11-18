@@ -363,7 +363,10 @@ function registerShortcuts() {
   const bind = (accelerator: string, handler: () => void) => {
     try {
       const ok = globalShortcut.register(accelerator, handler);
-      if (!ok) console.warn('[Main] shortcut unavailable:', accelerator);
+      if (!ok) {
+        console.warn('[Main] shortcut unavailable:', accelerator);
+        toast(`Shortcut ${accelerator} is unavailable (another app may have claimed it)`, 'error');
+      }
     } catch (err) {
       console.warn('[Main] shortcut error', accelerator, err);
     }
@@ -374,7 +377,13 @@ function registerShortcuts() {
   bind('CommandOrControl+Alt+Enter', () => command({ type: 'open-chat' }));
   bind('CommandOrControl+R', () => command({ type: 'reset-context' }));
   bind('CommandOrControl+H', () => {
-    void captureScreen();
+    void captureScreen().then((shot) => {
+      if (shot) {
+        toast(`Screenshot captured (${screenshots.length}/5) — used by Analyse Screen`, 'info');
+      } else {
+        toast('Screen capture failed', 'error');
+      }
+    });
   });
   bind('CommandOrControl+Delete', async () => {
     screenshots.pop();

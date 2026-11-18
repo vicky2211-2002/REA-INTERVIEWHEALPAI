@@ -41,7 +41,7 @@ const SECONDARY: Row[] = [
   {
     keys: ['Ctrl', 'H'],
     title: 'Take Screenshots',
-    description: 'Manually take multiple screenshots to capture complex, multi-screen problems.',
+    description: 'Manually take screenshots; each press confirms with a toast. Attach more than one for multi-screen problems.',
   },
   {
     keys: ['Ctrl', 'Delete'],

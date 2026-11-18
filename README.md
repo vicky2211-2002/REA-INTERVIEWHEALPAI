@@ -16,7 +16,7 @@ a dark chat bar, and an answer card — not a browser page.
 | Chat with AI | `Ctrl+Alt+Enter` | Opens the chat bar (optional "Use Screen" toggle for vision models) |
 | Reset Context | `Ctrl+R` | Clears transcript, screenshots, answers, and chat |
 | Start / Stop Listening | `Ctrl+Shift+L` | Toggles live transcription |
-| Take Screenshot | `Ctrl+H` | Manual capture (attach more than one for multi-screen problems) |
+| Take Screenshot | `Ctrl+H` | Manual capture; each press shows a toast confirming the shot was captured (attach more than one for multi-screen problems) |
 | Delete Last Screenshot | `Ctrl+Delete` | Removes the newest screenshot from context |
 | Show / Hide App | `Ctrl+\` | Hides the overlay completely; press again to bring it back |
 | Move App | `Ctrl+←` / `Ctrl+→` | Nudges the overlay horizontally |
