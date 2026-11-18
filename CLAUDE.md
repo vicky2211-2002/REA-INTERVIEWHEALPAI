@@ -6,9 +6,12 @@ Short, accurate context for this repository. For depth, read
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.1.0 — transcription now supports a selectable
-**Local (offline whisper.cpp)** or **API (OpenAI-compatible
-`/audio/transcriptions`)** provider.
+hide/restore). Version 1.1.1 — transcription supports a selectable **Local
+(offline whisper.cpp)** or **API (OpenAI-compatible `/audio/transcriptions`)**
+provider. Verified end-to-end with Groq's free `whisper-large-v3`: real-speech
+sentence transcribed exactly (HTTP 200), both NVIDIA custom chat models
+`OK` via in-app Test, `test-transcription` IPC OK, API path drops phantom
+fillers on near-silent clips.
 
 ---
 

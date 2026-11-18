@@ -247,7 +247,11 @@ AudioContext(16000)  ──PCM s16──▶  'audio-chunk'  ──────�
   binary/model needed); missing keys throw a clear error that surfaces as a toast.
   `test-transcription` IPC → `testApiConnection()` sends a 1 s silent WAV so users
   can verify URL/key/model before relying on it. The spoken-language setting applies
-  to both providers; keys never leave the local settings file.
+  to both providers; keys never leave the local settings file. The API path applies
+  the same `isHallucination` filter as the local path (drops "you"/"Thank you."
+  fillers from near-silent audio). **Verified Nov 2026** with Groq free tier
+  (`whisper-large-v3`, exact transcription of a synthesized SAPI sentence);
+  NVIDIA NIM has no STT endpoint (HTTP 404) — NVIDIA keys work for answers only.
 
 ### 5.3 Model resolution (AI)
 

@@ -323,7 +323,9 @@ export class WhisperTranscriber extends EventEmitter {
       if (this.settings.transcriptionProvider === 'api') {
         const text = await this.transcribeWithApi(wavFile);
         try { fs.unlinkSync(wavFile); } catch {}
-        if (text.trim()) {
+        // Whisper hallucinates fillers ("you", "Thank you.") on near-silent
+        // clips — apply the same filter as the local path.
+        if (text.trim() && !this.isHallucination(text)) {
           this.onTranscript?.(this.createTranscriptSegment({ text }));
         }
         return;

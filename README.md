@@ -51,9 +51,13 @@ You choose how speech becomes text in **Settings → API → Transcription**:
     `%APPDATA%\interview-copilot\whisper-models` the first time they are selected.
 - **API (cloud)** — every ~3 s of audio is POSTed to an OpenAI‑compatible
   `…/audio/transcriptions` endpoint (multipart WAV). Works with OpenAI `whisper-1`,
-  Groq `whisper-large-v3`, or any self‑hosted faster‑whisper server.
-  Fill in **Base URL**, **API Key**, and **Model**, then click **Test connection**.
+  **Groq `whisper-large-v3`** (recommended; free tier at console.groq.com), or any
+  self‑hosted faster‑whisper server. The Groq setup is verified end‑to‑end — Base
+  URL `https://api.groq.com/openai/v1`, Model `whisper-large-v3`. Fill in
+  **Base URL**, **API Key**, and **Model**, then click **Test connection**.
   Use this when the local models mis-hear technical vocabulary/accents.
+  Note: NVIDIA NIM has **no** transcription endpoint (verified — HTTP 404), so
+  NVIDIA keys work for answers only, not for speech.
 
 Either way:
 
