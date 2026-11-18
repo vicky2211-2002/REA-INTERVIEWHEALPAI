@@ -9,7 +9,7 @@ resume-anchored), read [`INSTRUCTIONS.md`](./INSTRUCTIONS.md).
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.2.6 — transcription supports a selectable **Local
+hide/restore). Version 1.2.7 — transcription supports a selectable **Local
 (offline whisper.cpp)** or **API (OpenAI-compatible `/audio/transcriptions`)**
 provider. The API mode manages **multiple saved endpoints** (Settings → API →
 Transcription → Add / Edit / Use / Delete; persisted as `transcriptionProfiles`
@@ -34,7 +34,7 @@ multimodal model to screenshots only ("Same as answer model" by default). If the
 model rejects the image (e.g. vLLM without `--enable-multimodal`), the app now
 automatically retries text-only with a neutral toast instead of a dead answer
 card — the screen prompt notes that no image is available and the answer is
-grounded in the transcript. v1.2.4: Ctrl+H now confirms each capture with a toast (“Screenshot captured (n/5)”) instead of capturing silently, and a startup toast warns when a global shortcut could not register (e.g. claimed by another app). v1.2.5: Ctrl+Delete toasts the delete result (“Screenshot deleted (n left)” / “Last screenshot deleted — none left” / “No screenshots to delete”); shortcut and in-app delete share one code path. v1.2.6: Ctrl+←/→ now travels up to ±25% of the screen work-area width (dynamic, previously hardcoded ±400 px), and a stored legacy offset is clamped at startup.
+grounded in the transcript. v1.2.4: Ctrl+H now confirms each capture with a toast (“Screenshot captured (n/5)”) instead of capturing silently, and a startup toast warns when a global shortcut could not register (e.g. claimed by another app). v1.2.5: Ctrl+Delete toasts the delete result (“Screenshot deleted (n left)” / “Last screenshot deleted — none left” / “No screenshots to delete”); shortcut and in-app delete share one code path. v1.2.6: Ctrl+←/→ now travels up to ±25% of the screen work-area width (dynamic, previously hardcoded ±400 px), and a stored legacy offset is clamped at startup. v1.2.7: the ±25%-of-screen movement change was reverted at user request — Ctrl+←/→ is back to the hardcoded ±400 px cap, no dynamic screen math, no startup clamp.
 
 ---
 
