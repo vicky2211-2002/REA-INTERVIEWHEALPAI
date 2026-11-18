@@ -371,9 +371,11 @@ v1.1.0 has no migration of its own — absent keys fall back to the defaults via
 `Ctrl+R` reset · `Ctrl+Shift+L` listening · `Ctrl+H` screenshot · `Ctrl+Delete`
 delete screenshot · `Ctrl+\` show/hide window · `Ctrl+Q` quit ·
 `Ctrl+Shift+Alt+O` restore · `Ctrl+Shift+↑/↓/←/→` scroll · `Ctrl+←/→` move ·
-`Ctrl+[/]` opacity. `Ctrl+←/→` moves the overlay horizontally, clamped to
-**±400 px** (v1.2.6 tried a dynamic ±25%-of-screen cap; v1.2.7 reverted it
-at user request — back to the hardcoded ±400 px).
+`Ctrl+[/]` opacity. `Ctrl+←/→` slides the overlay via
+`transform: translateX(offset)` with a 120 ms ease-out transition (the old
+`padding-left` could not go negative, so Ctrl+← never rendered — fixed in
+v1.2.8). Travel is clamped to **±75% of the screen work-area width** in the
+`move-x` IPC handler (`maxHorizontalOffset()`).
 
 ---
 

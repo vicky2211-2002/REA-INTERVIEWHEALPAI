@@ -73,6 +73,11 @@ function currentSettings(): Settings {
 // ---------------------------------------------------------------------------
 // Window
 // ---------------------------------------------------------------------------
+/** Horizontal travel limit for Ctrl+←/→: ±75% of the screen's work-area width. */
+function maxHorizontalOffset(): number {
+  return Math.round(screen.getPrimaryDisplay().workAreaSize.width * 0.75);
+}
+
 function createOverlayWindow() {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
@@ -554,7 +559,8 @@ function setupIPC() {
 
   ipcMain.on('move-x', (_event, delta: number) => {
     const settings = currentSettings();
-    const next = clamp(settings.windowOffsetX + delta, -400, 400);
+    const limit = maxHorizontalOffset();
+    const next = clamp(settings.windowOffsetX + delta, -limit, limit);
     settingsManager.updateSettings({ windowOffsetX: next });
     send('settings-update', { windowOffsetX: next });
   });

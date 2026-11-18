@@ -342,7 +342,12 @@ export default function App() {
   const showAnswer = !dashboardOpen && !chatOpen && answers.length > 0;
 
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ paddingLeft: settings.windowOffsetX }}>
+    // Translate (not padding): negative offsets must move the overlay left —
+    // CSS padding can't go negative, which silently disabled Ctrl+←.
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={{ transform: `translateX(${settings.windowOffsetX}px)`, transition: 'transform 120ms ease-out' }}
+    >
       <div className="pointer-events-none flex h-full w-full flex-col items-center pt-3">
         <div className="pointer-events-auto">
           <CommandBar

@@ -19,7 +19,7 @@ a dark chat bar, and an answer card — not a browser page.
 | Take Screenshot | `Ctrl+H` | Manual capture; each press shows a toast confirming the shot was captured (attach more than one for multi-screen problems) |
 | Delete Last Screenshot | `Ctrl+Delete` | Removes the newest screenshot from context (toast confirms) |
 | Show / Hide App | `Ctrl+\` | Hides the overlay completely; press again to bring it back |
-| Move App | `Ctrl+←` / `Ctrl+→` | Nudges the overlay horizontally (±400 px) |
+| Move App | `Ctrl+←` / `Ctrl+→` | Slides the overlay horizontally — both directions, ±75% of the screen |
 | Transparency | `Ctrl+[` / `Ctrl+]` | Lowers / raises overlay opacity |
 | Scroll Answers | `Ctrl+Shift+↑/↓` | Scrolls the answer, then jumps to the previous/next answer at the edges |
 | Quit | `Ctrl+Q` | Exits (also available from the tray menu) |
