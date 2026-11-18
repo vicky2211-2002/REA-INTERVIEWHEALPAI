@@ -251,7 +251,7 @@ OpenRouter, Cerebras) with exact Base URLs and model IDs for:
 Each entry includes signup links, where the free limits live, and the
 verification result so you know it worked on 2026-11-18.
 
-## 9.3 Interview answer style — Settings → Instructions (v1.2.0+)
+## 9.3 Interview answer style — Settings → Instructions
 
 The **Instructions** field (**Settings** tab) is prepended to every AI request
 as `CANDIDATE INSTRUCTIONS (follow strictly):` — it controls *how* the copilot
