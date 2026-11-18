@@ -324,7 +324,7 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
                     <div className="min-w-0">
                       <div className="truncate text-[13px] font-medium">{model.name}</div>
                       <div className="truncate text-[11px] text-gray-500">{model.model}</div>
-                      <div className="truncate text-[10px] text-gray-400" title={model.baseUrl}>{model.baseUrl}</div>
+                      <div className="tip truncate text-[10px] text-gray-400" data-tip={model.baseUrl}>{model.baseUrl}</div>
                     </div>
                     <div className="flex shrink-0 gap-3">
                       <button type="button" onClick={() => startEditModel(model)} className="text-[12px] text-indigo-600 hover:underline">Edit</button>
@@ -522,7 +522,7 @@ export function ApiTab({ settings, onUpdate }: ApiTabProps) {
                             )}
                           </div>
                           <div className="truncate text-[11px] text-gray-500">{profile.model}</div>
-                          <div className="truncate text-[10px] text-gray-400" title={profile.baseUrl}>
+                          <div className="tip truncate text-[10px] text-gray-400" data-tip={profile.baseUrl}>
                             {profile.baseUrl}
                           </div>
                         </div>

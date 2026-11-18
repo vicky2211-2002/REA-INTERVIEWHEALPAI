@@ -96,16 +96,16 @@ export function AnswerView({ answers, index, onIndexChange, onClose, scrollSigna
           <button
             type="button"
             onClick={() => void copy()}
-            title="Copy answer"
-            className="grid h-7 w-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            data-tip="Copy answer"
+            className="tip grid h-7 w-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           >
             {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
           </button>
           <button
             type="button"
             onClick={onClose}
-            title="Close"
-            className="grid h-7 w-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            data-tip="Close"
+            className="tip grid h-7 w-7 place-items-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           >
             <X className="h-4 w-4" />
           </button>

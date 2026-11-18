@@ -331,6 +331,13 @@ on every element, so the OS cursor never turns into hand/pointer/I-beam over
 the invisible overlay during a screen share — a viewer sees a plain desktop
 cursor at all times. Clicks and text selection still work.
 
+**Tooltip stealth (v1.2.2):** every native HTML `title` attribute is gone
+(`CommandBar` shield/mic, answer/chat copy & close, dashboard account & close,
+saved-model/profile URLs). Hover hints use `.tip[data-tip]` CSS tooltips
+rendered **inside** the page — the capture protection covers them, so a
+screen-share viewer never sees them (native Chromium tooltips are separate,
+unprotected OS popups).
+
 ### 5.5 Settings
 
 `electron-store` file: `%APPDATA%\interview-copilot\interview-copilot-settings.json`.

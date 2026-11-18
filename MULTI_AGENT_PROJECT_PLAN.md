@@ -2,7 +2,7 @@
 
 **Project:** InterviewCopilot - Exact replica of interviewhelpai.com with customizations  
 **Date:** 2026-11-18  
-**Status:** HISTORICAL — planned/shipped as v1.0.0 (verified, pushed). Current release is **v1.2.1** (v1.2.0 added saved transcription APIs; v1.2.1 adds cursor stealth, sanitized provider errors); see `INSTALL_UPDATE.md` § 9 and `ENGINEERING_GUIDE.md` for current state  
+**Status:** HISTORICAL — planned/shipped as v1.0.0 (verified, pushed). Current release is **v1.2.2** (v1.2.0 saved transcription APIs; v1.2.1 cursor stealth + sanitized provider errors; v1.2.2 in-page tooltips hidden from screen share); see `INSTALL_UPDATE.md` § 9 and `ENGINEERING_GUIDE.md` for current state  
 **Reference:** `AGENT_SKILLS_SETUP.md` for agent definitions
 
 ---  

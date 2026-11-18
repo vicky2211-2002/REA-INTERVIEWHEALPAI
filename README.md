@@ -91,8 +91,10 @@ Either way:
   The cursor never changes over the overlay either (always a plain arrow — no
   hand/pointer/I-beam over invisible widgets during a screen share), and
   provider errors are sanitized so no API key can appear in the UI (v1.2.1).
-  Pressing Answer with no audio captured shows a small neutral toast, not a red
-  error card.
+  Hover hints ("Click to open dashboard", "Start listening") are in-page
+  tooltips hidden by the same protection — native OS tooltips are never shown
+  (v1.2.2). Pressing Answer with no audio captured shows a small neutral
+  toast, not a red error card.
 
 ## Development
 

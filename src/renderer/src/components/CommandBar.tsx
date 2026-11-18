@@ -34,8 +34,8 @@ export function CommandBar({
       <button
         type="button"
         onClick={onToggleDashboard}
-        title="Click to open dashboard"
-        className="grid h-[34px] w-[34px] place-items-center rounded-full bg-white text-[#0c0c0e] transition hover:bg-white/90"
+        data-tip="Click to open dashboard"
+        className="tip grid h-[34px] w-[34px] place-items-center rounded-full bg-white text-[#0c0c0e] transition hover:bg-white/90"
       >
         <Shield className="h-[17px] w-[17px]" strokeWidth={2.2} />
       </button>
@@ -60,8 +60,8 @@ export function CommandBar({
       <button
         type="button"
         onClick={onToggleListening}
-        title={listening ? 'Stop listening' : 'Start listening'}
-        className={`relative ml-0.5 grid h-[26px] w-[26px] place-items-center rounded-full transition ${
+        data-tip={listening ? 'Stop listening' : 'Start listening'}
+        className={`tip relative ml-0.5 grid h-[26px] w-[26px] place-items-center rounded-full transition ${
           listening ? 'bg-red-500 text-white pulse-ring' : 'bg-white text-[#0c0c0e] hover:bg-white/90'
         }`}
       >

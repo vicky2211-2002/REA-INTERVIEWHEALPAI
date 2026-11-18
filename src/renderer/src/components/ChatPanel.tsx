@@ -98,9 +98,9 @@ export function ChatPanel({ messages, busy, onSend, onClose }: ChatPanelProps) {
 
         <button
           type="button"
-          title="Close chat"
+          data-tip="Close chat"
           onClick={onClose}
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-white/50 hover:bg-white/10 hover:text-white"
+          className="tip grid h-7 w-7 shrink-0 place-items-center rounded-md text-white/50 hover:bg-white/10 hover:text-white"
         >
           <X className="h-4 w-4" />
         </button>

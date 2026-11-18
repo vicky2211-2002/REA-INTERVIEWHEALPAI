@@ -59,8 +59,8 @@ export function Dashboard({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"
-            title="Account"
+            className="tip grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"
+            data-tip="Account"
           >
             <User className="h-[18px] w-[18px]" />
           </button>
@@ -85,8 +85,8 @@ export function Dashboard({
         <button
           type="button"
           onClick={onClose}
-          title="Click to close dashboard"
-          className="grid h-7 w-9 place-items-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+          data-tip="Click to close dashboard"
+          className="tip grid h-7 w-9 place-items-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
         >
           <ChevronDown className="h-4 w-4" />
         </button>
