@@ -371,7 +371,9 @@ v1.1.0 has no migration of its own — absent keys fall back to the defaults via
 `Ctrl+R` reset · `Ctrl+Shift+L` listening · `Ctrl+H` screenshot · `Ctrl+Delete`
 delete screenshot · `Ctrl+\` show/hide window · `Ctrl+Q` quit ·
 `Ctrl+Shift+Alt+O` restore · `Ctrl+Shift+↑/↓/←/→` scroll · `Ctrl+←/→` move ·
-`Ctrl+[/]` opacity.
+`Ctrl+[/]` opacity. `Ctrl+←/→` moves the overlay up to **±25% of the screen's
+work-area width** (dynamic — `maxHorizontalOffset()` in `main.ts`; a stored
+legacy ±400 px value is clamped at startup by `enforceOffsetLimit()`).
 
 ---
 

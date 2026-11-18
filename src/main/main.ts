@@ -73,9 +73,26 @@ function currentSettings(): Settings {
 // ---------------------------------------------------------------------------
 // Window
 // ---------------------------------------------------------------------------
+/** Horizontal travel limit for Ctrl+←/→: ±25% of the screen's work-area width. */
+function maxHorizontalOffset(): number {
+  return Math.round(screen.getPrimaryDisplay().workAreaSize.width * 0.25);
+}
+
+/** Clamp a previously stored offset (legacy ±400 px) into the dynamic range. */
+function enforceOffsetLimit() {
+  const settings = currentSettings();
+  const limit = maxHorizontalOffset();
+  const clamped = clamp(settings.windowOffsetX, -limit, limit);
+  if (clamped !== settings.windowOffsetX) {
+    settingsManager.updateSettings({ windowOffsetX: clamped });
+    console.log(`[Main] clamped windowOffsetX ${settings.windowOffsetX} -> ${clamped} (25% screen limit)`);
+  }
+}
+
 function createOverlayWindow() {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
+  enforceOffsetLimit();
 
   mainWindow = new BrowserWindow({
     x: display.workArea.x,
@@ -554,7 +571,8 @@ function setupIPC() {
 
   ipcMain.on('move-x', (_event, delta: number) => {
     const settings = currentSettings();
-    const next = clamp(settings.windowOffsetX + delta, -400, 400);
+    const limit = maxHorizontalOffset();
+    const next = clamp(settings.windowOffsetX + delta, -limit, limit);
     settingsManager.updateSettings({ windowOffsetX: next });
     send('settings-update', { windowOffsetX: next });
   });
