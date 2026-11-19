@@ -110,6 +110,8 @@ export interface Settings {
   whisperModel: 'tiny' | 'base' | 'small' | 'medium' | 'large-v3';
   whisperLanguage: string;
   whisperDevice: 'cpu' | 'cuda' | 'auto';
+  // Transcription provider: offline whisper.cpp, or an OpenAI-compatible
+  // /audio/transcriptions API (whisper-1, Groq whisper-large-v3, …)
   transcriptionProvider: 'local' | 'api';
   transcriptionApiBaseUrl: string;
   transcriptionApiKey: string;
@@ -188,7 +190,7 @@ export interface IPCChannels {
   'test-result': { modelId: string; success: boolean; response?: string; error?: string };
   'detection-event': { type: string; detail: string; timestamp: number };
   'ui-command': UiCommand;
-  'screenshots-update': string[];
+  'screenshots-update': { count: number };
   'toast': { message: string; kind?: 'info' | 'error' | 'success' };
 
   // Renderer -> Main
@@ -277,7 +279,7 @@ export interface ElectronAPI {
   captureScreen: () => Promise<void>;
   getScreenshots: () => Promise<string[]>;
   deleteLastScreenshot: () => Promise<void>;
-  onScreenshots: (callback: (shots: string[]) => void) => () => void;
+  onScreenshots: (callback: (info: { count: number }) => void) => () => void;
 
   // UI
   onUiCommand: (callback: (command: UiCommand) => void) => () => void;

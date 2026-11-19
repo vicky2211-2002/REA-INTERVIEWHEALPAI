@@ -350,7 +350,7 @@ e.g. vLLM started without `--enable-multimodal`), it retries
 `generateResponseStream` text-only with a "no image available" note and emits
 a neutral toast (`Model has no multimodal processing — answering without the
 screenshot`), so the candidate still gets an answer. Settings → Settings tab →
-"Screen analysis (vision)" exposes the toggle and the model dropdown. v1.2.4: the `CommandOrControl+H` shortcut toasts on capture (`Screenshot captured (n/5)`) and `registerShortcuts()` toasts when a global shortcut fails to register (previously only a lost console.warn) — both were silent before, so Ctrl+H looked broken. v1.2.5: both screenshot-delete paths (`CommandOrControl+Delete` shortcut and the `delete-screenshot` IPC) call the shared `deleteLastScreenshot()` helper, which toasts the outcome (`Screenshot deleted (n left)` / `No screenshots to delete`).
+"Screen analysis (vision)" exposes the toggle and the model dropdown. v1.2.4: the `CommandOrControl+H` shortcut toasts on capture (`Screenshot captured (n/5)`) and `registerShortcuts()` toasts when a global shortcut fails to register (previously only a lost console.warn) — both were silent before, so Ctrl+H looked broken. v1.2.5: both screenshot-delete paths (`CommandOrControl+Delete` shortcut and the `delete-screenshot` IPC) call the shared `deleteLastScreenshot()` helper, which toasts the outcome (`Screenshot deleted (n left)` / `No screenshots to delete`). v1.2.9: the Ctrl+H capture cap is 10 (`MAX_SCREENSHOTS`; toast shows `n/10`), raised from 5 so long code questions can attach up to 10 full-screen shots; `screenshots-update` now emits only `{ count: number }` on every capture/delete/reset instead of re-sending the full base64 array (the renderer's handler was a no-op; Analyse Screen still reads the array via `getScreenshots()`).
 
 ### 5.5 Settings
 
@@ -534,6 +534,7 @@ selection path without touching the user's Groq configuration.
 ### 7.7 Screenshot capture, overlay movement, mock interview
 
 ```powershell
+node tools/cdp_check_screenshot_limit.cjs 9228 # 10-shot cap: 10 stick, 11th/12th clipped, tray restored to 0
 node tools/cdp_check_capture.cjs 9228  # Ctrl+H capture pipeline (same main-process captureScreen())
 node tools/cdp_check_move.cjs 9228     # Ctrl+←/→ clamp: translateX both directions, ±75% of the
                                        # work-area width (v1.2.8); restores windowOffsetX afterwards
@@ -543,6 +544,12 @@ node tools/cdp_mock_interview.cjs 9228 # 10 mock questions (HR/technical/behavio
 
 `cdp_check_capture.cjs` exercises the same `captureScreen()` the Ctrl+H
 shortcut uses, so a passing run means the shortcut's capture path works.
+`cdp_check_screenshot_limit.cjs` fires 12 captures and asserts the tray
+holds exactly 10 (`MAX_SCREENSHOTS`), then drains the test shots and
+confirms the tray is empty again — it refuses to run when screenshots
+already exist (restart the app or Ctrl+R first). Its reads never pull the
+raw base64 array over CDP (only the length), which is what makes 10
+captures reliable to assert.
 `cdp_check_move.cjs` nudges `move-x` far past both limits and asserts the
 clamp is symmetric and the stored offset is restored afterwards.
 `cdp_mock_interview.cjs` replays a full mock interview against the model and

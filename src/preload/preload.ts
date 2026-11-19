@@ -50,7 +50,7 @@ const api = {
   captureScreen: (): Promise<void> => ipcRenderer.invoke('capture-screen'),
   getScreenshots: (): Promise<string[]> => ipcRenderer.invoke('get-screenshots'),
   deleteLastScreenshot: (): Promise<void> => ipcRenderer.invoke('delete-screenshot'),
-  onScreenshots: (cb: (shots: string[]) => void) => subscribe('screenshots-update', cb),
+  onScreenshots: (cb: (info: { count: number }) => void) => subscribe('screenshots-update', cb),
 
   // UI
   onUiCommand: (cb: (command: UiCommand) => void) => subscribe('ui-command', cb),

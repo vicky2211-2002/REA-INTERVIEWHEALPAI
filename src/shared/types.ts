@@ -190,7 +190,7 @@ export interface IPCChannels {
   'test-result': { modelId: string; success: boolean; response?: string; error?: string };
   'detection-event': { type: string; detail: string; timestamp: number };
   'ui-command': UiCommand;
-  'screenshots-update': string[];
+  'screenshots-update': { count: number };
   'toast': { message: string; kind?: 'info' | 'error' | 'success' };
 
   // Renderer -> Main
@@ -205,6 +205,7 @@ export interface IPCChannels {
   'add-custom-model': AIModel;
   'remove-custom-model': string;
   'test-model': { modelId: string; prompt: string };
+  'test-transcription': void;
   'upload-resume': { filePath: string };
   'upload-job-description': { filePath: string };
   'pick-file': { kind: 'resume' | 'job-description' };
@@ -278,7 +279,7 @@ export interface ElectronAPI {
   captureScreen: () => Promise<void>;
   getScreenshots: () => Promise<string[]>;
   deleteLastScreenshot: () => Promise<void>;
-  onScreenshots: (callback: (shots: string[]) => void) => () => void;
+  onScreenshots: (callback: (info: { count: number }) => void) => () => void;
 
   // UI
   onUiCommand: (callback: (command: UiCommand) => void) => () => void;

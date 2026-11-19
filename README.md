@@ -16,7 +16,7 @@ a dark chat bar, and an answer card — not a browser page.
 | Chat with AI | `Ctrl+Alt+Enter` | Opens the chat bar (optional "Use Screen" toggle for vision models) |
 | Reset Context | `Ctrl+R` | Clears transcript, screenshots, answers, and chat |
 | Start / Stop Listening | `Ctrl+Shift+L` | Toggles live transcription |
-| Take Screenshot | `Ctrl+H` | Manual capture; each press shows a toast confirming the shot was captured (attach more than one for multi-screen problems) |
+| Take Screenshot | `Ctrl+H` | Manual capture; each press shows a toast confirming the shot (`n/10`). Up to 10 shots are kept — attach more than one for multi-screen problems or long code |
 | Delete Last Screenshot | `Ctrl+Delete` | Removes the newest screenshot from context (toast confirms) |
 | Show / Hide App | `Ctrl+\` | Hides the overlay completely; press again to bring it back |
 | Move App | `Ctrl+←` / `Ctrl+→` | Slides the overlay horizontally — both directions, ±75% of the screen |
@@ -100,6 +100,9 @@ Either way:
   screenshots (Settings → Screen analysis). If your endpoint rejects images
   (e.g. vLLM without `--enable-multimodal`), the app automatically answers
   from the transcript instead of failing.
+- **Ten-shot screen context** (v1.2.9) — `Ctrl+H` keeps up to 10 full-screen
+  screenshots for vision questions (handy for long code); older shots drop
+  off past the cap, and `Ctrl+Delete` removes the newest.
 
 ## Development
 

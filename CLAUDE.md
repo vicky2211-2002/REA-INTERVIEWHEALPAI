@@ -9,7 +9,7 @@ resume-anchored), read [`INSTRUCTIONS.md`](./INSTRUCTIONS.md).
 
 **Status:** feature-complete rebuild; installer builds and has been tested
 end-to-end (transcription, answer, screen analysis, chat, custom API, PDF resume,
-hide/restore). Version 1.2.8 — transcription supports a selectable **Local
+hide/restore). Version 1.2.9 — transcription supports a selectable **Local
 (offline whisper.cpp)** or **API (OpenAI-compatible `/audio/transcriptions`)**
 provider. The API mode manages **multiple saved endpoints** (Settings → API →
 Transcription → Add / Edit / Use / Delete; persisted as `transcriptionProfiles`
@@ -34,7 +34,7 @@ multimodal model to screenshots only ("Same as answer model" by default). If the
 model rejects the image (e.g. vLLM without `--enable-multimodal`), the app now
 automatically retries text-only with a neutral toast instead of a dead answer
 card — the screen prompt notes that no image is available and the answer is
-grounded in the transcript. v1.2.4: Ctrl+H now confirms each capture with a toast (“Screenshot captured (n/5)”) instead of capturing silently, and a startup toast warns when a global shortcut could not register (e.g. claimed by another app). v1.2.5: Ctrl+Delete toasts the delete result (“Screenshot deleted (n left)” / “Last screenshot deleted — none left” / “No screenshots to delete”); shortcut and in-app delete share one code path. v1.2.6: Ctrl+←/→ now travels up to ±25% of the screen work-area width (dynamic, previously hardcoded ±400 px), and a stored legacy offset is clamped at startup. v1.2.7: the ±25%-of-screen movement change was reverted at user request — Ctrl+←/→ is back to the hardcoded ±400 px cap, no dynamic screen math, no startup clamp. v1.2.8: the real movement bug fixed — the renderer shifted the overlay with CSS `padding-left`, which cannot go negative, so Ctrl+← never rendered. Now `transform: translateX` (±75% of the screen work-area width, 120 ms ease-out).
+grounded in the transcript. v1.2.4: Ctrl+H now confirms each capture with a toast (“Screenshot captured (n/5)”) instead of capturing silently, and a startup toast warns when a global shortcut could not register (e.g. claimed by another app). v1.2.5: Ctrl+Delete toasts the delete result (“Screenshot deleted (n left)” / “Last screenshot deleted — none left” / “No screenshots to delete”); shortcut and in-app delete share one code path. v1.2.6: Ctrl+←/→ now travels up to ±25% of the screen work-area width (dynamic, previously hardcoded ±400 px), and a stored legacy offset is clamped at startup. v1.2.7: the ±25%-of-screen movement change was reverted at user request — Ctrl+←/→ is back to the hardcoded ±400 px cap, no dynamic screen math, no startup clamp. v1.2.8: the real movement bug fixed — the renderer shifted the overlay with CSS `padding-left`, which cannot go negative, so Ctrl+← never rendered. Now `transform: translateX` (±75% of the screen work-area width, 120 ms ease-out). v1.2.9: the Ctrl+H screenshot cap is raised 5 → 10 (`MAX_SCREENSHOTS` constant; "(n/10)" toast) so long code questions can supply up to 10 full-screen shots as vision context. The `screenshots-update` IPC now sends only `{ count: number }` instead of re-sending the full multi-MB base64 array on every capture (the full array remains available via `getScreenshots()` for Analyse Screen); the renderer's listener was already a no-op. Verified via `tools/cdp_check_screenshot_limit.cjs` (10 captures stick, 11th/12th capped at 10, tray restored to empty).
 
 ---
 
@@ -84,6 +84,7 @@ powershell -File tools/win_visible.ps1 -ProcessName InterviewCopilot   # hidden?
 node tools/cdp_test_apis.cjs 9224             # flip provider, test-transcription + test-model
 node tools/cdp_test_profiles.cjs 9224         # saved transcription profile add/switch/delete flows
 node tools/cdp_check_capture.cjs 9228         # Ctrl+H capture pipeline (same captureScreen() path)
+node tools/cdp_check_screenshot_limit.cjs 9228 # 10-screenshot cap: 10 stick, 11+ clipped, restores tray to 0
 node tools/cdp_check_move.cjs 9228            # Ctrl+←/→ ±75% translateX clamp; restores windowOffsetX
 node tools/cdp_mock_interview.cjs 9228        # 10-question mock interview via ask(mode:'chat'); SAVE_REPORT=1 to keep the report
 ```

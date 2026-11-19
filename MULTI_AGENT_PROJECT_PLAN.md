@@ -2,7 +2,7 @@
 
 **Project:** InterviewCopilot - Exact replica of interviewhelpai.com with customizations  
 **Date:** 2026-11-18  
-**Status:** HISTORICAL — planned/shipped as v1.0.0 (verified, pushed). Current release is **v1.2.8** (v1.2.0 saved transcription APIs; v1.2.1 cursor stealth + sanitized provider errors; v1.2.2 in-page tooltips hidden from screen share; v1.2.3 screen-vision toggle + optional vision model + automatic text-only fallback; v1.2.4 Ctrl+H toast feedback + startup shortcut warning; v1.2.5 Ctrl+Delete toast; v1.2.8 horizontal movement fixed via translateX — Ctrl+←/→ now work both ways, ±75% of the screen); see `INSTALL_UPDATE.md` § 9 and `ENGINEERING_GUIDE.md` for current state  
+**Status:** HISTORICAL — planned/shipped as v1.0.0 (verified, pushed). Current release is **v1.2.9** (v1.2.0 saved transcription APIs; v1.2.1 cursor stealth + sanitized provider errors; v1.2.2 in-page tooltips hidden from screen share; v1.2.3 screen-vision toggle + optional vision model + automatic text-only fallback; v1.2.4 Ctrl+H toast feedback + startup shortcut warning; v1.2.5 Ctrl+Delete toast; v1.2.8 horizontal movement fixed via translateX — Ctrl+←/→ now work both ways, ±75% of the screen; v1.2.9 Ctrl+H screenshot cap raised 5 → 10 and slimmer `screenshots-update` IPC); see `INSTALL_UPDATE.md` § 9 and `ENGINEERING_GUIDE.md` for current state  
 **Reference:** `AGENT_SKILLS_SETUP.md` for agent definitions
 
 ---  

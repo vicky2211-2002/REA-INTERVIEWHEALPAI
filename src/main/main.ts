@@ -128,7 +128,7 @@ function createOverlayWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     send('settings-update', currentSettings());
     mainWindow?.webContents.send('transcript-update', currentTranscript);
-    if (screenshots.length) send('screenshots-update', screenshots);
+    if (screenshots.length) send('screenshots-update', { count: screenshots.length });
     setTimeout(() => mainWindow?.setIgnoreMouseEvents(true, { forward: true }), 250);
   });
 }
@@ -338,6 +338,9 @@ async function handleAsk(request: AskRequest): Promise<{ ok: boolean; error?: st
   }
 }
 
+/** Max screenshots kept in context; oldest are dropped past this. */
+const MAX_SCREENSHOTS = 10;
+
 // ---------------------------------------------------------------------------
 // Screenshots
 // ---------------------------------------------------------------------------
@@ -356,14 +359,14 @@ async function captureScreen(): Promise<string | null> {
   if (!source || source.thumbnail.isEmpty()) return null;
   const dataUrl = source.thumbnail.toDataURL();
   screenshots.push(dataUrl);
-  if (screenshots.length > 5) screenshots = screenshots.slice(-5);
-  send('screenshots-update', screenshots);
+  if (screenshots.length > MAX_SCREENSHOTS) screenshots = screenshots.slice(-MAX_SCREENSHOTS);
+  send('screenshots-update', { count: screenshots.length });
   return dataUrl;
 }
 
 function deleteLastScreenshot(): void {
   const removed = screenshots.pop();
-  send('screenshots-update', screenshots);
+  send('screenshots-update', { count: screenshots.length });
   if (!removed) {
     toast('No screenshots to delete', 'info');
   } else if (screenshots.length === 0) {
@@ -396,7 +399,7 @@ function registerShortcuts() {
   bind('CommandOrControl+H', () => {
     void captureScreen().then((shot) => {
       if (shot) {
-        toast(`Screenshot captured (${screenshots.length}/5) — used by Analyse Screen`, 'info');
+        toast(`Screenshot captured (${screenshots.length}/${MAX_SCREENSHOTS}) — used by Analyse Screen`, 'info');
       } else {
         toast('Screen capture failed', 'error');
       }
@@ -574,7 +577,7 @@ function setupIPC() {
     currentTranscript = [];
     screenshots = [];
     send('transcript-update', []);
-    send('screenshots-update', []);
+    send('screenshots-update', { count: 0 });
   });
 
   // Files ---------------------------------------------------------------
